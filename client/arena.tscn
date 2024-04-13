@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://c34rmuujfpmpr"]
+
+[ext_resource type="Script" path="res://src/arena.gd" id="1_hox7i"]
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_4im3p"]
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_02mj6"]
+
+[node name="Arena" type="Node2D"]
+script = ExtResource("1_hox7i")
+
+[node name="SummoningZone" type="Sprite2D" parent="."]
+modulate = Color(0.180392, 0.180392, 0.180392, 1)
+position = Vector2(576, 324)
+scale = Vector2(1152, 648)
+texture = SubResource("CanvasTexture_4im3p")
+
+[node name="FightingZone" type="Sprite2D" parent="."]
+modulate = Color(0.607843, 0.8, 0.592157, 1)
+position = Vector2(576, 324)
+scale = Vector2(1088, 584)
+texture = SubResource("CanvasTexture_02mj6")
