@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dd3x8rffhld1"]
 
-[ext_resource type="Script" path="res://DrawingPanel.gd" id="1_rjxuc"]
+[ext_resource type="Script" path="res://scripts/DrawingPanel.gd" id="1_logt0"]
 
 [node name="Drawing" type="Node2D"]
 
@@ -19,7 +19,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-script = ExtResource("1_rjxuc")
+script = ExtResource("1_logt0")
 
 [node name="StartGame" type="Button" parent="."]
 offset_left = 510.0
