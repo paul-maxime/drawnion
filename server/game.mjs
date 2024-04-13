@@ -1,6 +1,11 @@
 const MAP_WIDTH = 512;
 const MAP_HEIGHT = 512;
 
+const ENTITY_SIZE = 16;
+const ENTITY_SPEED = 8;
+
+const TICK_SPEED = 150;
+
 let players = [];
 let entities = [];
 
@@ -48,11 +53,38 @@ export function onMessage(player, message) {
 
 export function tick() {
   for (const entity of entities) {
-    console.log("Ticking entity " + entity.id);
-    entity.y += 100;
+    entityTick(entity);
+  }
+  setTimeout(tick, TICK_SPEED);
+}
+
+function entityTick(entity) {
+  const enemy = getNearestEnemy(entity);
+  if (!enemy) {
+    // No enemy, nothing to do.
+    return;
+  }
+
+  const distance = distanceBetween(entity, enemy);
+  if (distance <= ENTITY_SIZE * 2) {
+    entityAttack(entity, enemy);
+  } else {
+    entityMove(entity, enemy);
+  }
+}
+
+function entityMove(entity, enemy) {
+  const movement = vectorNormalize({ x: enemy.x - entity.x, y: enemy.y - entity.y });
+  const destinationX = entity.x + movement.x * ENTITY_SPEED;
+  const destinationY = entity.y + movement.y * ENTITY_SPEED;
+  if (canEntityMoveTo(entity, destinationX, destinationY)) {
+    entity.x = destinationX;
+    entity.y = destinationY;
     sendToAll(makeMoveMessage(entity));
   }
-  setTimeout(tick, 1000);
+}
+
+function entityAttack(entity, enemy) {
 }
 
 function sendTo(player, data) {
@@ -97,8 +129,8 @@ function makeSummonMessage(entity) {
     type: "summon",
     entityId: entity.id,
     ownerId: entity.ownerId,
-    x: entity.x,
-    y: entity.y,
+    x: Math.round(entity.x),
+    y: Math.round(entity.y),
   };
 }
 
@@ -106,8 +138,8 @@ function makeMoveMessage(entity) {
   return {
     type: "move",
     entityId: entity.id,
-    x: entity.x,
-    y: entity.y,
+    x: Math.round(entity.x),
+    y: Math.round(entity.y),
   };
 }
 
@@ -123,5 +155,37 @@ function getPlayerFromId(id) {
 }
 
 function getNearestEnemy(entity) {
+  const enemies = entities.filter(x => x.ownerId !== entity.ownerId);
+  let nearest = null;
+  let minDistance = 0;
+  for (const enemy of enemies) {
+    if (enemy.ownerId === entity.ownerId) continue;
+    const distance = distanceBetweenSquared(entity, enemy);
+    if (!nearest || distance < minDistance) {
+      nearest = enemy;
+      minDistance = distance;
+    }
+  }
+  return nearest;
+}
 
+function canEntityMoveTo(entity, x, y) {
+  return !entities.some(other => other !== entity && distanceBetween({ x, y }, other) < ENTITY_SIZE);
+}
+
+function distanceBetween(entityA, entityB) {
+  return Math.sqrt((entityA.x - entityB.x) ** 2 + (entityA.y - entityB.y) ** 2);
+}
+
+function distanceBetweenSquared(entityA, entityB) {
+  return (entityA.x - entityB.x0) ** 2 + (entityA.y - entityB.y) ** 2;
+}
+
+function vectorNormalize(v) {
+  const norm = vectorNorm(v);
+  return { x: v.x / norm, y: v.y / norm };
+}
+
+function vectorNorm(v) {
+  return Math.sqrt(v.x ** 2 + v.y ** 2);
 }
