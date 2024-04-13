@@ -4,6 +4,9 @@ var socket = WebSocketPeer.new()
 var server_url = "ws://172.17.171.73:8080";
 
 signal game_joined(player_id: int)
+signal entity_summoned(entity_id: int, owner_id: int, x: int, y: int)
+signal entity_moved(entity_id: int, x: int, y: int)
+signal entity_despawned(entity_id: int)
 
 func _ready():
 	print("Connecting to " + server_url)
@@ -30,8 +33,21 @@ func _on_message_received(message):
 	match message.type:
 		"hello":
 			game_joined.emit(message.playerId)
+		"summon":
+			entity_summoned.emit(message.entityId, message.ownerId, message.x, message.y)
+		"move":
+			entity_moved.emit(message.entityId, message.x, message.y)
+		"despawn":
+			entity_despawned.emit(message.entityId)
 		_:
 			print("Unknown message: ", message)
 
-func _on_hello(message):
-	print("Joined the game, player id: %d" % [message.playerId])
+func sendSummon(x: int, y: int):
+	_send({
+		"type": "summon",
+		"x": x,
+		"y": y
+	});
+
+func _send(message):
+	socket.send_text(JSON.stringify(message))

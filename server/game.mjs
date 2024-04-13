@@ -1,8 +1,8 @@
 const MAP_WIDTH = 512;
 const MAP_HEIGHT = 512;
 
-const players = [];
-const entities = [];
+let players = [];
+let entities = [];
 
 let currentPlayerId = 1;
 let currentEntityId = 1;
@@ -29,6 +29,12 @@ export function onDisconnected(player) {
   if (index > -1) {
     players.splice(index, 1);
   }
+  for (const entity of entities) {
+    if (entity.ownerId === player.id) {
+      sendToAll(makeDespawnMessage(entity));
+    }
+  }
+  entities = entities.filter(x => x.ownerId !== player.id);
 }
 
 export function onMessage(player, message) {
@@ -59,25 +65,6 @@ function sendToAll(data) {
   }
 }
 
-function makeSummonMessage(entity) {
-  return {
-    type: "summon",
-    entityId: entity.id,
-    ownerId: entity.ownerId,
-    x: entity.x,
-    y: entity.y,
-  };
-}
-
-function makeMoveMessage(entity) {
-  return {
-    type: "move",
-    entityId: entity.id,
-    x: entity.x,
-    y: entity.y,
-  };
-}
-
 function onSummon(player, message) {
   const x = message.x;
   const y = message.y;
@@ -103,6 +90,32 @@ function onSummon(player, message) {
 
   sendToAll(makeSummonMessage(entity));
   entities.push(entity);
+}
+
+function makeSummonMessage(entity) {
+  return {
+    type: "summon",
+    entityId: entity.id,
+    ownerId: entity.ownerId,
+    x: entity.x,
+    y: entity.y,
+  };
+}
+
+function makeMoveMessage(entity) {
+  return {
+    type: "move",
+    entityId: entity.id,
+    x: entity.x,
+    y: entity.y,
+  };
+}
+
+function makeDespawnMessage(entity) {
+  return {
+    type: "despawn",
+    entityId: entity.id,
+  };
 }
 
 function getPlayerFromId(id) {
