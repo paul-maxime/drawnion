@@ -1,2 +1,5 @@
 # Godot 4+ specific ignores
 .godot/
+
+# settings.json contains the local godot path
+.vscode/settings.json
