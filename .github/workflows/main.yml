@@ -1,0 +1,15 @@
+name: SSH Deployment
+on: [push]
+jobs:
+  build:
+    name: Deployment
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy the project using SSH
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: ./build-drawnion.sh
