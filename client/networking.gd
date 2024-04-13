@@ -1,7 +1,7 @@
 extends Node
 
 var socket = WebSocketPeer.new()
-var server_url = "ws://172.17.171.73:8080";
+var server_url = "wss://paulmaxime.fr/ws/drawnion/";
 
 signal game_joined(player_id: int)
 signal entity_summoned(entity_id: int, owner_id: int, x: int, y: int)
