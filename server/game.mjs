@@ -116,8 +116,8 @@ function spawnNeutralEntity() {
   const size = NEUTRAL_SIZES[Math.floor(Math.random() * NEUTRAL_SIZES.length)];
   const element = Math.floor(Math.random() * 3) + 1;
 
-  const x = Math.floor(Math.random() * MAP_WIDTH - MAP_WIDTH / 5) + MAP_WIDTH / 10;
-  const y = Math.floor(Math.random() * MAP_HEIGHT - MAP_HEIGHT / 5) + MAP_HEIGHT / 10;
+  const x = Math.floor(Math.random() * (MAP_WIDTH - MAP_WIDTH / 5)) + MAP_WIDTH / 10;
+  const y = Math.floor(Math.random() * (MAP_HEIGHT - MAP_HEIGHT / 5)) + MAP_HEIGHT / 10;
 
   const entity = {
     id: currentEntityId++,

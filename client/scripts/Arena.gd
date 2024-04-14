@@ -40,7 +40,9 @@ func _input(event):
 			var pos: Vector2 = get_local_mouse_position()
 			var spawn_pos = _closest_server_spawn_from_pos(pos)
 			print(spawn_pos)
-			$Network.sendSummon(spawn_pos.x, spawn_pos.y, 16)
+			var size = (_rng.randi() % 4 + 1) * 16;
+			var element = _rng.randi() % 3 + 1;
+			$Network.sendSummon(spawn_pos.x, spawn_pos.y, size, element)
 
 func _client_pos_to_server_pos(pos: Vector2):
 		print("(", pos.x, " - ", $FightingZone.position.x, ") / ", $FightingZone.scale.x, " * ", server_width)
@@ -100,9 +102,8 @@ func _on_avatar_received(player_id: int, pixels: Array):
 	print("avatar received: ", player_id)
 	var texture = ImageTexture.create_from_image(image)
 	_avatars[player_id] = texture
-	$Network.sendSummon(_rng.randi() % (server_width - 1), 0 if player_id % 2 == 0 else server_height - 1, (_rng.randi() % 4 + 1) * 16)
 
-func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int):
+func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int, element: int):
 	print("Entity %d summoned at (%d, %d), owner %d, size %d" % [unit_id, x, y, owner_id, size])
 	if _avatars.get(owner_id) == null:
 		printerr("Unknown owner ID for entity ", owner_id)
