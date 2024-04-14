@@ -15,6 +15,7 @@ var server_height
 var _avatar: Array[int]
 var _player_id
 var _avatars = {}
+var _colors = {}
 
 var _avatar_shader
 
@@ -23,6 +24,10 @@ func set_drawing(avatar: Array[int]):
 
 func _ready():
 	_avatar_shader = preload ("res://shaders/unit.gdshader")
+	_create_avatar(0,
+		[0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0] # hello there
+	)
+	_colors[0] = Color(0.8, 0.8, 0.8, 0.3)
 	$Network.game_joined.connect(_on_game_joined)
 	$Network.player_avatar_received.connect(_on_avatar_received)
 	$Network.entity_summoned.connect(_on_entity_summoned)
@@ -91,7 +96,7 @@ func _on_game_joined(player_id: int, map_width: int, map_height: int):
 		_avatar.fill(1)
 	$Network.sendAvatar(_avatar)
 
-func _on_avatar_received(player_id: int, pixels: Array):
+func _create_avatar(player_id: int, pixels: Array):
 	var image = Image.create(16, 16, false, Image.FORMAT_RGBA8)
 	if pixels.size() == IMAGE_SIZE:
 		for h in range(IMAGE_HEIGHT):
@@ -105,6 +110,10 @@ func _on_avatar_received(player_id: int, pixels: Array):
 	print("avatar received: ", player_id)
 	var texture = ImageTexture.create_from_image(image)
 	_avatars[player_id] = texture
+	_colors[player_id] = Color.from_hsv(randf_range(0, 1), 1, 1, 0.3)
+
+func _on_avatar_received(player_id: int, pixels: Array):
+	_create_avatar(player_id, pixels)
 
 func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int, _element: int):
 	print("Entity %d summoned at (%d, %d), owner %d, size %d" % [unit_id, x, y, owner_id, size])
@@ -113,15 +122,15 @@ func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int,
 		return
 	var entity: Node2D = entity_scene.instantiate()
 	var sprite = Sprite2D.new()
-	entity.modulate = Color(0.8, 0.8, 0.8, 0.20)
+	var color = _colors[owner_id]
+	entity.circle_color = color
 	sprite.texture = _avatars[owner_id]
 	sprite.material = ShaderMaterial.new()
-	sprite.material.set_shader_parameter("line_color", Color(0.2, 0.8, 0.2, 0.7))
+	sprite.material.set_shader_parameter("line_color", Color(color.r, color.g, color.b, 0.7))
 	sprite.material.shader = _avatar_shader
 	var ratio = $FightingZone.scale.x / server_width
 	entity.position = _server_pos_to_client_pos(Vector2(x, y))
 	entity.scale = Vector2(float(size) / IMAGE_WIDTH * ratio, float(size) / IMAGE_HEIGHT * ratio)
-	#sprite.scale = entity.scale
 	entity.add_child(sprite)
 
 	var unit = {}

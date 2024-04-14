@@ -1,11 +1,11 @@
 shader_type canvas_item;
 
 uniform vec4 line_color: source_color = vec4(1.0);
-uniform float width: hint_range(0,10)  = 0.5;
+uniform float width: hint_range(0,10)  = 0.4;
 
 const vec2 OFFSETS[8] = {
-	vec2(-1,-1), vec2(-1,0), vec2(-1,1), vec2(0,-1),
-	vec2(0,1), vec2(1,-1), vec2(1,0), vec2(1,1)
+	vec2(-2,-2), vec2(-2,0), vec2(-2,1), vec2(0,-2),
+	vec2(0,1), vec2(1,-2), vec2(1,0), vec2(1,1)
 };
 
 void vertex(){
@@ -21,7 +21,7 @@ void fragment(){
 	
 	// This is texture size when add margin equal to 
 	// width of the outline*2 (left and right / top and down)
-	vec2 added_margin_texture_pixel_size = 1.0 / (real_texture_size + (width*2.0));
+	vec2 added_margin_texture_pixel_size = 1.0 / (real_texture_size + (width*4.0));
 	
 	// width in range (0,1), respected to the new texture size
 	vec2 width_size = added_margin_texture_pixel_size * width;
