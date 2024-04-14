@@ -5,7 +5,7 @@ var server_url = "wss://paulmaxime.fr/ws/drawnion/";
 
 signal game_joined(player_id: int, map_width: int, map_height: int)
 signal player_avatar_received(player_id: int, pixels: Array)
-signal entity_summoned(entity_id: int, owner_id: int, x: int, y: int, size: int)
+signal entity_summoned(entity_id: int, owner_id: int, x: int, y: int, size: int, element: int)
 signal entity_moved(entity_id: int, x: int, y: int)
 signal entity_damaged(entity_id: int, attacker_id: int, new_size: int)
 signal entity_despawned(entity_id: int)
@@ -39,7 +39,7 @@ func _on_message_received(message):
 			print(type_string(typeof(message.pixels)))
 			player_avatar_received.emit(message.playerId, message.pixels)
 		"summon":
-			entity_summoned.emit(message.entityId, message.ownerId, message.x, message.y, message.size)
+			entity_summoned.emit(message.entityId, message.ownerId, message.x, message.y, message.size, message.element)
 		"move":
 			entity_moved.emit(message.entityId, message.x, message.y)
 		"damage":
@@ -55,12 +55,13 @@ func sendAvatar(pixels: Array[int]):
 		"pixels": pixels
 	});
 
-func sendSummon(x: int, y: int, size: int):
+func sendSummon(x: int, y: int, size: int, element: int):
 	_send({
 		"type": "summon",
 		"x": x,
 		"y": y,
-		"size": size
+		"size": size,
+		"element": element,
 	});
 
 func _send(message):
