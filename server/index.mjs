@@ -28,6 +28,7 @@ socketServer.on("connection", (player) => {
 });
 
 const PORT = process.env.PORT || 8080;
-httpServer.listen(PORT, () => console.log(`Listening on port ${PORT}`));
-
-Game.tick();
+httpServer.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`);
+  Game.tick();
+});

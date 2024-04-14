@@ -34,6 +34,12 @@ const MAX_NEUTRAL_ENTITIES = 10;
 const TICKS_BETWEEN_NEUTRAL_SPAWNS = 5;
 const NEUTRAL_SIZES = [16, 16, 16, 16, 16, 24, 24, 24, 24, 32, 32, 32, 48, 48, 64];
 
+const MANA_PER_TICK = 1;
+const INITIAL_MANA = 20;
+const MAX_MANA = 100;
+
+const AVATAR_SIZE = 16 * 16;
+
 let players = [];
 let entities = [];
 
@@ -45,6 +51,8 @@ let neutralSpawnCooldown = 0;
 
 export function onConnected(player) {
   player.id = currentPlayerId++;
+  player.mana = INITIAL_MANA;
+
   players.push(player);
 
   console.log("Player connected", player.id);
@@ -92,6 +100,9 @@ export function onMessage(player, message) {
 }
 
 export function tick() {
+  for (const player of players) {
+    playerTick(player);
+  }
   for (const entity of entities) {
     entityTick(entity);
   }
@@ -125,11 +136,12 @@ function spawnNeutralEntity() {
     x,
     y,
     size,
+    originalSize: size,
     element,
   };
 
   if (canEntityMoveTo(entity, entity.x, entity.y)) {
-    console.log("Spawning neutral", entity);
+    console.log(`Spawning neutral at (${x}, ${y}), size ${size}, element ${element}`);
     sendToAll(makeSummonMessage(entity));
     entities.push(entity);
     remainingNeutralEntities += 1;
@@ -138,6 +150,25 @@ function spawnNeutralEntity() {
     console.log("Not spawning neutral: collision");
     return false;
   }
+}
+
+function playerTick(player) {
+  if (!player.pixels) {
+    // Haven't joined yet, probably.
+  }
+
+  giveManaToPlayer(player, MANA_PER_TICK);
+}
+
+function giveManaToPlayer(player, amount) {
+  player.mana += amount;
+  if (player.mana < 0) {
+    player.mana = 0;
+  }
+  if (player.mana > MAX_MANA) {
+    player.mana = MAX_MANA;
+  }
+  sendTo(player, makeManaMessage(player));
 }
 
 function entityTick(entity) {
@@ -192,6 +223,16 @@ function entityAttack(entity, enemy) {
     if (enemy.ownerId === 0) {
       remainingNeutralEntities -= 1;
     }
+
+    const owner = getPlayerFromId(entity.ownerId);
+    if (owner) {
+      const manaGain = Math.round(enemy.originalSize / 2);
+      giveManaToPlayer(owner, manaGain);
+      sendTo(owner, makeKillMessage(entity, enemy, manaGain));
+    } else {
+      console.log("Entity without owner: ", entity);
+    }
+
     sendToAll(makeDespawnMessage(enemy));
   }
 }
@@ -214,7 +255,16 @@ function onAvatarReceived(player, message) {
   if (player.pixels) {
     throw new Error("Image already received");
   }
-  player.pixels = message.pixels;
+
+  const pixels = message.pixels;
+  if (!Array.isArray(pixels) || pixels.length !== AVATAR_SIZE || pixels.some(x => typeof x !== "number")) {
+    throw new Error("Invalid avatar");
+  }
+  if (pixels.filter(x => x === 1).length < 50) {
+    throw new Error("Avatar not filled enough");
+  }
+
+  player.pixels = pixels;
   sendToAll(makeAvatarMessage(player));
 }
 
@@ -248,15 +298,27 @@ function onSummon(player, message) {
     throw new Error("Invalid element");
   }
 
+  if (player.mana < size) {
+    console.log("Summoning without enough mana!");
+    return;
+  }
+
   const entity = {
     id: currentEntityId++,
     ownerId: player.id,
     x,
     y,
     size,
+    originalSize: size,
     element,
   };
 
+  if (!canEntityMoveTo(entity, entity.x, entity.y)) {
+    console.log("Collision while summoning!");
+    return;
+  }
+
+  giveManaToPlayer(player, -size);
   sendToAll(makeSummonMessage(entity));
   entities.push(entity);
 }
@@ -303,6 +365,23 @@ function makeDespawnMessage(entity) {
   return {
     type: "despawn",
     entityId: entity.id,
+  };
+}
+
+function makeManaMessage(player) {
+  return {
+    type: "mana",
+    mana: player.mana,
+    max: MAX_MANA,
+  };
+}
+
+function makeKillMessage(attacker, defender, manaGain) {
+  return {
+    type: "kill",
+    attackerId: attacker.id,
+    defenderId: defender.id,
+    manaGain,
   };
 }
 
