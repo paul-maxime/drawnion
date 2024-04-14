@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://c34rmuujfpmpr"]
+[gd_scene load_steps=5 format=3 uid="uid://c34rmuujfpmpr"]
 
 [ext_resource type="Script" path="res://scripts/Arena.gd" id="1_rkggh"]
+[ext_resource type="PackedScene" uid="uid://jnm05j8xh3nt" path="res://scenes/Network.tscn" id="2_fgb4b"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_4im3p"]
 
@@ -20,3 +21,7 @@ modulate = Color(0.0666667, 0.168627, 0.0627451, 1)
 position = Vector2(576, 324)
 scale = Vector2(1088, 584)
 texture = SubResource("CanvasTexture_02mj6")
+
+[node name="Network" parent="." instance=ExtResource("2_fgb4b")]
+
+[node name="Entities" type="Node2D" parent="."]
