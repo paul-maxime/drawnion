@@ -40,6 +40,8 @@ const MAX_MANA = 300;
 
 const AVATAR_SIZE = 16 * 16;
 
+const TICKS_PER_DECAY = 5;
+
 let players = [];
 let entities = [];
 
@@ -138,6 +140,7 @@ function spawnNeutralEntity() {
     size,
     originalSize: size,
     element,
+    decay: 0,
   };
 
   if (canEntityMoveTo(entity, entity.x, entity.y)) {
@@ -177,6 +180,13 @@ function entityTick(entity) {
     return;
   }
 
+  decayEntity(entity);
+
+  if (entity.size < MIN_HEALTH) {
+    // Dead after the decay.
+    return;
+  }
+
   if (entity.ownerId === 0) {
     // Neutral entity, doesn't attack.
     return;
@@ -200,9 +210,30 @@ function entityTick(entity) {
   }
 }
 
+function decayEntity(entity) {
+  entity.decay += 1;
+  if (entity.decay >= TICKS_PER_DECAY) {
+    entity.decay = 0;
+    entity.size -= 1;
+    sendToAll(makeDamageMessage(entity, null));
+    if (entity.size < MIN_HEALTH) {
+      // Rip by decay.
+      despawnDeadEntity(entity);
+    }
+  }
+}
+
+function despawnDeadEntity(entity) {
+  entities = entities.filter(x => x.id !== entity.id);
+  if (entity.ownerId === 0) {
+    remainingNeutralEntities -= 1;
+  }
+  sendToAll(makeDespawnMessage(entity));
+}
+
 function entityMove(entity, enemy) {
   const movement = vectorNormalize({ x: enemy.x - entity.x, y: enemy.y - entity.y });
-  const speed = Math.min(ENTITY_SPEED, distanceBetween(entity, enemy) - (entity.size + enemy.size) / 2);
+  const speed = Math.min(ENTITY_SPEED, distanceBetween(entity, enemy) - (entity.size + enemy.size) / 2.2);
 
   const destinationX = entity.x + movement.x * speed;
   const destinationY = entity.y + movement.y * speed;
@@ -219,11 +250,6 @@ function entityAttack(entity, enemy) {
   sendToAll(makeDamageMessage(enemy, entity));
   if (enemy.size < MIN_HEALTH) {
     // Rip.
-    entities = entities.filter(x => x.id !== enemy.id);
-    if (enemy.ownerId === 0) {
-      remainingNeutralEntities -= 1;
-    }
-
     const owner = getPlayerFromId(entity.ownerId);
     if (owner) {
       const manaGain = enemy.originalSize;
@@ -233,6 +259,7 @@ function entityAttack(entity, enemy) {
       console.log("Entity without owner: ", entity);
     }
 
+    despawnDeadEntity(enemy);
     sendToAll(makeDespawnMessage(enemy));
   }
 }
@@ -311,6 +338,7 @@ function onSummon(player, message) {
     size,
     originalSize: size,
     element,
+    decay: 0,
   };
 
   if (!canEntityMoveTo(entity, entity.x, entity.y)) {
@@ -356,7 +384,7 @@ function makeDamageMessage(entity, attacker) {
   return {
     type: "damage",
     entityId: entity.id,
-    attackerId: attacker.id,
+    attackerId: attacker ? attacker.id : 0,
     newSize: entity.size,
   };
 }
