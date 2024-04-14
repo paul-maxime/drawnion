@@ -4,8 +4,9 @@ var socket = WebSocketPeer.new()
 var server_url = "wss://paulmaxime.fr/ws/drawnion/";
 
 signal game_joined(player_id: int)
-signal entity_summoned(entity_id: int, owner_id: int, x: int, y: int)
+signal entity_summoned(entity_id: int, owner_id: int, x: int, y: int, size: int)
 signal entity_moved(entity_id: int, x: int, y: int)
+signal entity_damaged(entity_id: int, attacker_id: int, new_size: int)
 signal entity_despawned(entity_id: int)
 
 func _ready():
@@ -34,19 +35,22 @@ func _on_message_received(message):
 		"hello":
 			game_joined.emit(message.playerId)
 		"summon":
-			entity_summoned.emit(message.entityId, message.ownerId, message.x, message.y)
+			entity_summoned.emit(message.entityId, message.ownerId, message.x, message.y, message.size)
 		"move":
 			entity_moved.emit(message.entityId, message.x, message.y)
+		"damage":
+			entity_damaged.emit(message.entityId, message.attackerId, message.newSize)
 		"despawn":
 			entity_despawned.emit(message.entityId)
 		_:
 			print("Unknown message: ", message)
 
-func sendSummon(x: int, y: int):
+func sendSummon(x: int, y: int, size: int):
 	_send({
 		"type": "summon",
 		"x": x,
-		"y": y
+		"y": y,
+		"size": size
 	});
 
 func _send(message):
