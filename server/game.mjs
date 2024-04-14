@@ -34,9 +34,9 @@ const MAX_NEUTRAL_ENTITIES = 10;
 const TICKS_BETWEEN_NEUTRAL_SPAWNS = 5;
 const NEUTRAL_SIZES = [16, 16, 16, 16, 16, 24, 24, 24, 24, 32, 32, 32, 48, 48, 64];
 
-const MANA_PER_TICK = 1;
-const INITIAL_MANA = 20;
-const MAX_MANA = 100;
+const MANA_PER_TICK = 2;
+const INITIAL_MANA = 50;
+const MAX_MANA = 300;
 
 const AVATAR_SIZE = 16 * 16;
 
@@ -226,7 +226,7 @@ function entityAttack(entity, enemy) {
 
     const owner = getPlayerFromId(entity.ownerId);
     if (owner) {
-      const manaGain = Math.round(enemy.originalSize / 2);
+      const manaGain = enemy.originalSize;
       giveManaToPlayer(owner, manaGain);
       sendTo(owner, makeKillMessage(entity, enemy, manaGain));
     } else {
@@ -405,7 +405,7 @@ function getNearestEnemy(entity) {
 }
 
 function canEntityMoveTo(entity, x, y) {
-  return !entities.some(other => other !== entity && distanceBetween({ x, y }, other) < (entity.size + other.size) / 2 - COLLISIONS_PRECISION);
+  return !entities.some(other => other !== entity && distanceBetween({ x, y }, other) < (entity.size + other.size) / (entity.ownerId === other.ownerId ? 4 : 3) - COLLISIONS_PRECISION);
 }
 
 function distanceBetween(entityA, entityB) {
