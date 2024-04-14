@@ -4,7 +4,7 @@ var socket = WebSocketPeer.new()
 var server_url = "wss://paulmaxime.fr/ws/drawnion/";
 
 signal game_joined(player_id: int, map_width: int, map_height: int)
-signal player_avatar_received(player_id: int, pixels: Array[int])
+signal player_avatar_received(player_id: int, pixels: Array)
 signal entity_summoned(entity_id: int, owner_id: int, x: int, y: int, size: int)
 signal entity_moved(entity_id: int, x: int, y: int)
 signal entity_damaged(entity_id: int, attacker_id: int, new_size: int)
@@ -28,7 +28,7 @@ func _process(_delta):
 	elif state == WebSocketPeer.STATE_CLOSED:
 		var code = socket.get_close_code()
 		var reason = socket.get_close_reason()
-		print("WebSocket closed with code: %d, reason %s. Clean: %s" % [code, reason, code != -1])
+		print("WebSocket closed with code: %d, reason %s. Clean: %s" % [code, reason, code != - 1])
 		set_process(false) # Stop processing.
 
 func _on_message_received(message):
@@ -36,6 +36,7 @@ func _on_message_received(message):
 		"hello":
 			game_joined.emit(message.playerId, message.mapWidth, message.mapHeight)
 		"avatar":
+			print(type_string(typeof(message.pixels)))
 			player_avatar_received.emit(message.playerId, message.pixels)
 		"summon":
 			entity_summoned.emit(message.entityId, message.ownerId, message.x, message.y, message.size)
@@ -50,7 +51,7 @@ func _on_message_received(message):
 
 func sendAvatar(pixels: Array[int]):
 	_send({
-		"type": "summon",
+		"type": "avatar",
 		"pixels": pixels
 	});
 

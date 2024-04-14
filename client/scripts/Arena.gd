@@ -1,12 +1,27 @@
-extends Node
+extends Node2D
 
 var entity_scene: PackedScene = preload ("res://scenes/TestEntity.tscn")
 
 var _rng = RandomNumberGenerator.new()
 var _units = {};
 
+var IMAGE_WIDTH = 16
+var IMAGE_HEIGHT = 16
+var IMAGE_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT
+
+var server_width
+var server_height
+
+var _avatar: Array[int]
+var _player_id
+var _avatars = {}
+
+func set_drawing(avatar: Array[int]):
+	_avatar = avatar
+
 func _ready():
 	$Network.game_joined.connect(_on_game_joined)
+	$Network.player_avatar_received.connect(_on_avatar_received)
 	$Network.entity_summoned.connect(_on_entity_summoned)
 	$Network.entity_moved.connect(_on_entity_moved)
 	$Network.entity_damaged.connect(_on_entity_damaged)
@@ -17,17 +32,87 @@ func _process(delta):
 		var unit = _units[id]
 		if unit.position_target != unit.entity.position:
 			unit.moving_time += delta * 10
-			unit.entity.position = unit.position_start.lerp(unit.position_target, unit.moving_time)
+			unit.entity.position = unit.position_start.lerp(unit.position_target, min(1, unit.moving_time))
 
-func _on_game_joined(player_id: int):
+func _input(event):
+	if event is InputEventMouseButton:
+		if event.is_pressed() and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+			var pos: Vector2 = get_local_mouse_position()
+			var spawn_pos = _closest_server_spawn_from_pos(pos)
+			print(spawn_pos)
+			$Network.sendSummon(spawn_pos.x, spawn_pos.y, 16)
+
+func _client_pos_to_server_pos(pos: Vector2):
+		print("(", pos.x, " - ", $FightingZone.position.x, ") / ", $FightingZone.scale.x, " * ", server_width)
+		return Vector2((pos.x - $FightingZone.position.x) / $FightingZone.scale.x * (server_width - 1), (pos.y - $FightingZone.position.y) / $FightingZone.scale.y * (server_height - 1))
+
+func _server_pos_to_client_pos(pos: Vector2):
+		return Vector2(pos.x / (server_width - 1) * $FightingZone.scale.x + $FightingZone.position.x, pos.y / (server_height - 1) * $FightingZone.scale.y + $FightingZone.position.y)
+
+func _closest_server_spawn_from_pos(pos: Vector2):
+	print("click ", pos)
+	var client_pos = _closest_client_spawn_from_pos(pos)
+	print("client ", client_pos)
+	var server_pos = _client_pos_to_server_pos(client_pos)
+	print("server ", server_pos)
+	return server_pos
+
+func _closest_client_spawn_from_pos(pos: Vector2):
+	var distance_bot = pos.distance_to(Vector2(pos.x, $FightingZone.position.y))
+	var distance_top = pos.distance_to(Vector2(pos.x, $FightingZone.position.y + $FightingZone.scale.y))
+	var distance_y = min(distance_top, distance_bot)
+	var distance_left = pos.distance_to(Vector2($FightingZone.position.x, pos.y))
+	var distance_right = pos.distance_to(Vector2($FightingZone.position.x + $FightingZone.scale.x, pos.y))
+	var distance_x = min(distance_left, distance_right)
+	if distance_x < distance_y:
+		if distance_left < distance_right:
+			return Vector2($FightingZone.position.x, pos.y)
+		else:
+			return Vector2($FightingZone.position.x + $FightingZone.scale.x, pos.y)
+	else:
+		if distance_bot < distance_top:
+			return Vector2(pos.x, $FightingZone.position.y)
+		else:
+			return Vector2(pos.x, $FightingZone.position.y + $FightingZone.scale.y)
+
+func _on_game_joined(player_id: int, map_width: int, map_height: int):
 	print("Joined the game, player id: %d" % [player_id])
-	$Network.sendSummon(_rng.randi() % 512, 0 if player_id % 2 == 0 else 511, (_rng.randi() % 4 + 1) * 16)
+	_player_id = player_id
+	server_width = map_width
+	server_height = map_height
+	if _avatar == null or _avatar.is_empty():
+		_avatar = []
+		_avatar.resize(IMAGE_SIZE)
+		_avatar.fill(1)
+	$Network.sendAvatar(_avatar)
+
+func _on_avatar_received(player_id: int, pixels: Array):
+	var image = Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	if pixels.size() == IMAGE_SIZE:
+		for h in range(IMAGE_HEIGHT):
+			for w in range(IMAGE_WIDTH):
+				if pixels[h * IMAGE_WIDTH + w] == 1:
+					image.set_pixel(w, h, Color.GRAY)
+				else:
+					image.set_pixel(w, h, Color.TRANSPARENT)
+	else:
+		printerr("Invalid image size received: ", pixels.size())
+	print("avatar received: ", player_id)
+	var texture = ImageTexture.create_from_image(image)
+	_avatars[player_id] = texture
+	$Network.sendSummon(_rng.randi() % (server_width - 1), 0 if player_id % 2 == 0 else server_height - 1, (_rng.randi() % 4 + 1) * 16)
 
 func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int):
 	print("Entity %d summoned at (%d, %d), owner %d, size %d" % [unit_id, x, y, owner_id, size])
-	var entity: Node2D = entity_scene.instantiate()
-	entity.position = Vector2(x, y)
-	entity.set_entity_size(size)
+	if _avatars.get(owner_id) == null:
+		printerr("Unknown owner ID for entity ", owner_id)
+		return
+	var entity = Sprite2D.new()
+	entity.texture = _avatars[owner_id]
+	entity.position = _server_pos_to_client_pos(Vector2(x, y))
+	var ratio = $FightingZone.scale.x / server_width
+	entity.scale = Vector2(float(size) / IMAGE_WIDTH * ratio, float(size) / IMAGE_HEIGHT * ratio)
+
 	var unit = {}
 	unit.entity = entity
 	unit.position_start = entity.position
@@ -43,7 +128,7 @@ func _on_entity_moved(unit_id: int, x: int, y: int):
 		print("Unknown entity")
 		return
 	unit.position_start = unit.entity.position
-	unit.position_target = Vector2(x, y)
+	unit.position_target = _server_pos_to_client_pos(Vector2(x, y))
 	unit.moving_time = 0
 
 func _on_entity_damaged(unit_id: int, attacker_id: int, new_size: int):
@@ -52,7 +137,8 @@ func _on_entity_damaged(unit_id: int, attacker_id: int, new_size: int):
 	if unit == null:
 		print("Unknown entity")
 		return
-	unit.entity.set_entity_size(new_size)
+	var ratio = $FightingZone.scale.x / server_width
+	unit.entity.scale = Vector2(float(new_size) / IMAGE_WIDTH * ratio, float(new_size) / IMAGE_HEIGHT * ratio)
 
 func _on_entity_despawned(unit_id: int):
 	print("Entity %d despawned" % [unit_id])
@@ -61,47 +147,4 @@ func _on_entity_despawned(unit_id: int):
 		print("Unknown entity")
 		return
 	unit.entity.queue_free()
-	unit.erase(unit_id)
-
-# extends Node2D
-
-# var IMAGE_WIDTH = 16
-# var IMAGE_HEIGHT = 16
-# var IMAGE_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT
-# var _pixels: Array[int] = []
-
-# var texture: Texture2D
-
-# func set_drawing(pixels: Array[int]):
-# 	_pixels = pixels
-
-# # Called when the node enters the scene tree for the first time.
-# func _ready():
-# 	var image = Image.create(16, 16, false, Image.FORMAT_RGBA8)
-# 	if _pixels.size() == IMAGE_SIZE:
-# 		for h in range(IMAGE_HEIGHT):
-# 			for w in range(IMAGE_WIDTH):
-# 				if _pixels[h * IMAGE_WIDTH + w] == 1:
-# 					image.set_pixel(w, h, Color.GRAY)
-# 				else:
-# 					image.set_pixel(w, h, Color.TRANSPARENT)
-# 	else:
-# 		printerr("Invalid image size received: ", _pixels.size())
-# 	texture = ImageTexture.create_from_image(image)
-
-# func _create_unit(pos: Vector2):
-# 	print("create unit at ", pos)
-# 	var sprite = Sprite2D.new()
-# 	sprite.texture = texture
-# 	sprite.position = pos
-# 	add_child(sprite)
-
-# func _input(event):
-# 	if event is InputEventMouseButton:
-# 		if event.is_pressed() and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-# 			var pos: Vector2 = get_local_mouse_position()
-# 			_create_unit(pos)
-
-# # Called every frame. 'delta' is the elapsed time since the previous frame.
-# func _process(_delta):
-# 	pass
+	_units.erase(unit_id)

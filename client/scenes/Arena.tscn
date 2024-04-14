@@ -18,9 +18,10 @@ texture = SubResource("CanvasTexture_4im3p")
 
 [node name="FightingZone" type="Sprite2D" parent="."]
 modulate = Color(0.0666667, 0.168627, 0.0627451, 1)
-position = Vector2(576, 324)
-scale = Vector2(1088, 584)
+position = Vector2(32, 18)
+scale = Vector2(1088, 612)
 texture = SubResource("CanvasTexture_02mj6")
+centered = false
 
 [node name="Network" parent="." instance=ExtResource("2_fgb4b")]
 
