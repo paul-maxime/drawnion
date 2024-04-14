@@ -3,7 +3,8 @@ extends Node
 var socket = WebSocketPeer.new()
 var server_url = "wss://paulmaxime.fr/ws/drawnion/";
 
-signal game_joined(player_id: int)
+signal game_joined(player_id: int, map_width: int, map_height: int)
+signal player_avatar_received(player_id: int, pixels: Array[int])
 signal entity_summoned(entity_id: int, owner_id: int, x: int, y: int, size: int)
 signal entity_moved(entity_id: int, x: int, y: int)
 signal entity_damaged(entity_id: int, attacker_id: int, new_size: int)
@@ -33,7 +34,9 @@ func _process(_delta):
 func _on_message_received(message):
 	match message.type:
 		"hello":
-			game_joined.emit(message.playerId)
+			game_joined.emit(message.playerId, message.mapWidth, message.mapHeight)
+		"avatar":
+			player_avatar_received.emit(message.playerId, message.pixels)
 		"summon":
 			entity_summoned.emit(message.entityId, message.ownerId, message.x, message.y, message.size)
 		"move":
@@ -44,6 +47,12 @@ func _on_message_received(message):
 			entity_despawned.emit(message.entityId)
 		_:
 			print("Unknown message: ", message)
+
+func sendavatar(pixels: Array[int]):
+	_send({
+		"type": "summon",
+		"pixels": pixels
+	});
 
 func sendSummon(x: int, y: int, size: int):
 	_send({
