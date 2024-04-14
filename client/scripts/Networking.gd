@@ -48,7 +48,7 @@ func _on_message_received(message):
 		_:
 			print("Unknown message: ", message)
 
-func sendavatar(pixels: Array[int]):
+func sendAvatar(pixels: Array[int]):
 	_send({
 		"type": "summon",
 		"pixels": pixels
