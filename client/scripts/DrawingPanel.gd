@@ -56,7 +56,7 @@ func _pixel_ratio():
 	return float(count) / (IMAGE_WIDTH * IMAGE_HEIGHT)
 
 func _on_start_game_pressed():
-	if _pixel_ratio() < 0.33:
+	if _pixel_ratio() < 0.20:
 		# TODO print error on label control
 		return
 	var arena = arena_scene.instantiate()
