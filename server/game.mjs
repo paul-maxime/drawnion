@@ -1,8 +1,8 @@
 const MAP_WIDTH = 512;
 const MAP_HEIGHT = 512;
 
-const ENTITY_SIZE = 16;
 const ENTITY_SPEED = 8;
+const MIN_HEALTH = 5;
 
 const TICK_SPEED = 150;
 
@@ -61,6 +61,11 @@ export function tick() {
 }
 
 function entityTick(entity) {
+  if (entity.size < MIN_HEALTH) {
+    // Is dead.
+    return;
+  }
+
   const enemy = getNearestEnemy(entity);
   if (!enemy) {
     // No enemy, nothing to do.
@@ -68,8 +73,12 @@ function entityTick(entity) {
   }
 
   const distance = distanceBetween(entity, enemy);
-  if (distance <= ENTITY_SIZE + COLLISIONS_PRECISION) {
+  if (distance <= (entity.size + enemy.size) / 2 + COLLISIONS_PRECISION) {
     entityAttack(entity, enemy);
+    // Move after attacking to keep entities together.
+    if (enemy.size >= MIN_HEALTH) {
+      entityMove(entity, enemy);
+    }
   } else {
     entityMove(entity, enemy);
   }
@@ -77,7 +86,7 @@ function entityTick(entity) {
 
 function entityMove(entity, enemy) {
   const movement = vectorNormalize({ x: enemy.x - entity.x, y: enemy.y - entity.y });
-  const speed = Math.min(ENTITY_SPEED, distanceBetween(entity, enemy) - ENTITY_SIZE);
+  const speed = Math.min(ENTITY_SPEED, distanceBetween(entity, enemy) - (entity.size + enemy.size) / 2);
 
   const destinationX = entity.x + movement.x * speed;
   const destinationY = entity.y + movement.y * speed;
@@ -90,6 +99,13 @@ function entityMove(entity, enemy) {
 }
 
 function entityAttack(entity, enemy) {
+  enemy.size -= 1;
+  sendToAll(makeDamageMessage(enemy, entity));
+  if (enemy.size < MIN_HEALTH) {
+    // Rip.
+    entities = entities.filter(x => x.id !== enemy.id);
+    sendToAll(makeDespawnMessage(enemy));
+  }
 }
 
 function sendTo(player, data) {
@@ -105,9 +121,10 @@ function sendToAll(data) {
 function onSummon(player, message) {
   const x = message.x;
   const y = message.y;
+  const size = message.size;
 
-  if (typeof x !== "number" || typeof y !== "number") {
-    throw new Error("Invalid summon location");
+  if (typeof x !== "number" || typeof y !== "number" || typeof size !== "number") {
+    throw new Error("Invalid summon");
   }
 
   if (x !== 0 && y !== 0 && x !== MAP_WIDTH - 1 && y !== MAP_HEIGHT - 1) {
@@ -118,11 +135,16 @@ function onSummon(player, message) {
     throw new Error("Invalid summon location");
   }
 
+  if (size !== 16 && size !== 32 && size !== 48 && size !== 64) {
+    throw new Error("Invalid summon size");
+  }
+
   const entity = {
     id: currentEntityId++,
     ownerId: player.id,
     x,
     y,
+    size,
   };
 
   sendToAll(makeSummonMessage(entity));
@@ -136,6 +158,7 @@ function makeSummonMessage(entity) {
     ownerId: entity.ownerId,
     x: Math.round(entity.x),
     y: Math.round(entity.y),
+    size: entity.size,
   };
 }
 
@@ -145,6 +168,15 @@ function makeMoveMessage(entity) {
     entityId: entity.id,
     x: Math.round(entity.x),
     y: Math.round(entity.y),
+  };
+}
+
+function makeDamageMessage(entity, attacker) {
+  return {
+    type: "damage",
+    entityId: entity.id,
+    attackerId: attacker.id,
+    newSize: entity.size,
   };
 }
 
@@ -175,7 +207,7 @@ function getNearestEnemy(entity) {
 }
 
 function canEntityMoveTo(entity, x, y) {
-  return !entities.some(other => other !== entity && distanceBetween({ x, y }, other) < ENTITY_SIZE - COLLISIONS_PRECISION);
+  return !entities.some(other => other !== entity && distanceBetween({ x, y }, other) < (entity.size + other.size) / 2 - COLLISIONS_PRECISION);
 }
 
 function distanceBetween(entityA, entityB) {
