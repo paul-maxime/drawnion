@@ -6,6 +6,8 @@ const ENTITY_SPEED = 8;
 
 const TICK_SPEED = 150;
 
+const COLLISIONS_PRECISION = 0.1;
+
 let players = [];
 let entities = [];
 
@@ -66,7 +68,7 @@ function entityTick(entity) {
   }
 
   const distance = distanceBetween(entity, enemy);
-  if (distance <= ENTITY_SIZE * 2) {
+  if (distance <= ENTITY_SIZE + COLLISIONS_PRECISION) {
     entityAttack(entity, enemy);
   } else {
     entityMove(entity, enemy);
@@ -75,8 +77,11 @@ function entityTick(entity) {
 
 function entityMove(entity, enemy) {
   const movement = vectorNormalize({ x: enemy.x - entity.x, y: enemy.y - entity.y });
-  const destinationX = entity.x + movement.x * ENTITY_SPEED;
-  const destinationY = entity.y + movement.y * ENTITY_SPEED;
+  const speed = Math.min(ENTITY_SPEED, distanceBetween(entity, enemy) - ENTITY_SIZE);
+
+  const destinationX = entity.x + movement.x * speed;
+  const destinationY = entity.y + movement.y * speed;
+
   if (canEntityMoveTo(entity, destinationX, destinationY)) {
     entity.x = destinationX;
     entity.y = destinationY;
@@ -170,7 +175,7 @@ function getNearestEnemy(entity) {
 }
 
 function canEntityMoveTo(entity, x, y) {
-  return !entities.some(other => other !== entity && distanceBetween({ x, y }, other) < ENTITY_SIZE);
+  return !entities.some(other => other !== entity && distanceBetween({ x, y }, other) < ENTITY_SIZE - COLLISIONS_PRECISION);
 }
 
 function distanceBetween(entityA, entityB) {
@@ -178,7 +183,7 @@ function distanceBetween(entityA, entityB) {
 }
 
 function distanceBetweenSquared(entityA, entityB) {
-  return (entityA.x - entityB.x0) ** 2 + (entityA.y - entityB.y) ** 2;
+  return (entityA.x - entityB.x) ** 2 + (entityA.y - entityB.y) ** 2;
 }
 
 function vectorNormalize(v) {
