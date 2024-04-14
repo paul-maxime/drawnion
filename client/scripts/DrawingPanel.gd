@@ -6,15 +6,19 @@ var IMAGE_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT
 
 var pixels: Array[int] = []
 var arena_scene: PackedScene
+var center
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	center = Vector2(float(IMAGE_WIDTH - 1) / 2, float(IMAGE_HEIGHT - 1) / 2)
 	arena_scene = preload ("res://scenes/Arena.tscn")
 	pixels.resize(IMAGE_SIZE)
 	pixels.fill(0)
 
 func set_pixel(pos: Vector2i, isDrawn: bool):
 	if pos.x < 0 or pos.y < 0 or pos.x >= IMAGE_WIDTH or pos.y >= IMAGE_HEIGHT:
+		return
+	if center.distance_to(pos) > float(IMAGE_WIDTH) / 2:
 		return
 	pixels[pos.x + pos.y * IMAGE_WIDTH] = 1 if isDrawn else 0
 	queue_redraw()
@@ -42,7 +46,10 @@ func _draw():
 	var ratio = Vector2(size.x / IMAGE_WIDTH, size.y / IMAGE_HEIGHT)
 	for h in range(IMAGE_HEIGHT):
 		for w in range(IMAGE_WIDTH):
-			if pixels[h * IMAGE_WIDTH + w] == 0:
+			var point = Vector2(w, h)
+			if center.distance_to(point) > float(IMAGE_WIDTH) / 2:
+				pass
+			elif pixels[h * IMAGE_WIDTH + w] == 0:
 				draw_rect(Rect2(w * ratio.x, h * ratio.y, ratio.x, ratio.y), Color.GRAY)
 			else:
 				draw_rect(Rect2(w * ratio.x, h * ratio.y, ratio.x, ratio.y), Color.WHITE)
@@ -63,7 +70,3 @@ func _on_start_game_pressed():
 	arena.set_drawing(pixels)
 	get_tree().root.add_child(arena)
 	get_node("/root/Drawing").queue_free()
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(_delta):
-	pass

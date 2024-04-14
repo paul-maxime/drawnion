@@ -16,10 +16,13 @@ var _avatar: Array[int]
 var _player_id
 var _avatars = {}
 
+var _avatar_shader
+
 func set_drawing(avatar: Array[int]):
 	_avatar = avatar
 
 func _ready():
+	_avatar_shader = preload ("res://shaders/unit.gdshader")
 	$Network.game_joined.connect(_on_game_joined)
 	$Network.player_avatar_received.connect(_on_avatar_received)
 	$Network.entity_summoned.connect(_on_entity_summoned)
@@ -103,16 +106,23 @@ func _on_avatar_received(player_id: int, pixels: Array):
 	var texture = ImageTexture.create_from_image(image)
 	_avatars[player_id] = texture
 
-func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int, element: int):
+func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int, _element: int):
 	print("Entity %d summoned at (%d, %d), owner %d, size %d" % [unit_id, x, y, owner_id, size])
 	if _avatars.get(owner_id) == null:
 		printerr("Unknown owner ID for entity ", owner_id)
 		return
-	var entity = Sprite2D.new()
-	entity.texture = _avatars[owner_id]
-	entity.position = _server_pos_to_client_pos(Vector2(x, y))
+	var entity: Node2D = entity_scene.instantiate()
+	var sprite = Sprite2D.new()
+	entity.modulate = Color(0.8, 0.8, 0.8, 0.20)
+	sprite.texture = _avatars[owner_id]
+	sprite.material = ShaderMaterial.new()
+	sprite.material.set_shader_parameter("line_color", Color(0.2, 0.8, 0.2, 0.7))
+	sprite.material.shader = _avatar_shader
 	var ratio = $FightingZone.scale.x / server_width
+	entity.position = _server_pos_to_client_pos(Vector2(x, y))
 	entity.scale = Vector2(float(size) / IMAGE_WIDTH * ratio, float(size) / IMAGE_HEIGHT * ratio)
+	#sprite.scale = entity.scale
+	entity.add_child(sprite)
 
 	var unit = {}
 	unit.entity = entity
