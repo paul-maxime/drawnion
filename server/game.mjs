@@ -1,5 +1,5 @@
-const MAP_WIDTH = 512;
-const MAP_HEIGHT = 512;
+const MAP_WIDTH = 800;
+const MAP_HEIGHT = 450;
 
 const ENTITY_SPEED = 8;
 const MIN_HEALTH = 5;
@@ -23,8 +23,15 @@ export function onConnected(player) {
   sendTo(player, {
     type: "hello",
     playerId: player.id,
+    mapWidth: MAP_WIDTH,
+    mapHeight: MAP_HEIGHT,
   });
 
+  for (const other of players) {
+    if (other.pixels) {
+      sendTo(player, makeAvatarMessage(other));
+    }
+  }
   for (const entity of entities) {
     sendTo(player, makeSummonMessage(entity));
   }
@@ -46,7 +53,9 @@ export function onDisconnected(player) {
 
 export function onMessage(player, message) {
   console.log(player.id, message);
-  if (message.type === "summon") {
+  if (message.type === "avatar") {
+    onAvatarReceived(player, message);
+  } else if (message.type === "summon") {
     onSummon(player, message);
   } else {
     throw new Error("Invalid message: " + message.type);
@@ -118,7 +127,19 @@ function sendToAll(data) {
   }
 }
 
+function onImageReceived(player, message) {
+  if (player.pixels) {
+    throw new Error("Image already received");
+  }
+  player.pixels = message.pixels;
+  sendToAll(makeAvatarMessage(player));
+}
+
 function onSummon(player, message) {
+  if (!player.pixels) {
+    throw new Error("Image required");
+  }
+
   const x = message.x;
   const y = message.y;
   const size = message.size;
@@ -149,6 +170,14 @@ function onSummon(player, message) {
 
   sendToAll(makeSummonMessage(entity));
   entities.push(entity);
+}
+
+function makeAvatarMessage(player) {
+  return {
+    type: "avatar",
+    playerId: player.id,
+    pixels: player.pixels,
+  };
 }
 
 function makeSummonMessage(entity) {
