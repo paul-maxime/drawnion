@@ -8,11 +8,40 @@ const TICK_SPEED = 150;
 
 const COLLISIONS_PRECISION = 0.1;
 
+const ELEMENTS_GRASS = 1;
+const ELEMENTS_FIRE = 2;
+const ELEMENTS_WATER = 3;
+
+const ELEMENTS_TABLE = {
+  [ELEMENTS_GRASS]: {
+    [ELEMENTS_GRASS]: 2,
+    [ELEMENTS_FIRE]: 1,
+    [ELEMENTS_WATER]: 4,
+  },
+  [ELEMENTS_FIRE]: {
+    [ELEMENTS_GRASS]: 4,
+    [ELEMENTS_FIRE]: 2,
+    [ELEMENTS_WATER]: 1,
+  },
+  [ELEMENTS_WATER]: {
+    [ELEMENTS_GRASS]: 1,
+    [ELEMENTS_FIRE]: 4,
+    [ELEMENTS_WATER]: 2,
+  },
+}
+
+const MAX_NEUTRAL_ENTITIES = 10;
+const TICKS_BETWEEN_NEUTRAL_SPAWNS = 5;
+const NEUTRAL_SIZES = [16, 16, 16, 16, 16, 24, 24, 24, 24, 32, 32, 32, 48, 48, 64];
+
 let players = [];
 let entities = [];
 
 let currentPlayerId = 1;
 let currentEntityId = 1;
+
+let remainingNeutralEntities = 0;
+let neutralSpawnCooldown = 0;
 
 export function onConnected(player) {
   player.id = currentPlayerId++;
@@ -66,12 +95,59 @@ export function tick() {
   for (const entity of entities) {
     entityTick(entity);
   }
+  spawnNeutralEntitiesIfRequired();
   setTimeout(tick, TICK_SPEED);
+}
+
+function spawnNeutralEntitiesIfRequired() {
+  if (remainingNeutralEntities < MAX_NEUTRAL_ENTITIES) {
+    if (neutralSpawnCooldown <= 0) {
+      neutralSpawnCooldown = TICKS_BETWEEN_NEUTRAL_SPAWNS;
+      spawnNeutralEntity();
+    } else {
+      neutralSpawnCooldown--;
+    }
+  } else {
+    neutralSpawnCooldown = TICKS_BETWEEN_NEUTRAL_SPAWNS;
+  }
+}
+
+function spawnNeutralEntity() {
+  const size = NEUTRAL_SIZES[Math.floor(Math.random() * NEUTRAL_SIZES.length)];
+  const element = Math.floor(Math.random() * 3) + 1;
+
+  const x = Math.floor(Math.random() * MAP_WIDTH - MAP_WIDTH / 5) + MAP_WIDTH / 10;
+  const y = Math.floor(Math.random() * MAP_HEIGHT - MAP_HEIGHT / 5) + MAP_HEIGHT / 10;
+
+  const entity = {
+    id: currentEntityId++,
+    ownerId: 0,
+    x,
+    y,
+    size,
+    element,
+  };
+
+  if (canEntityMoveTo(entity, entity.x, entity.y)) {
+    console.log("Spawning neutral", entity);
+    sendToAll(makeSummonMessage(entity));
+    entities.push(entity);
+    remainingNeutralEntities += 1;
+    return true;
+  } else {
+    console.log("Not spawning neutral: collision");
+    return false;
+  }
 }
 
 function entityTick(entity) {
   if (entity.size < MIN_HEALTH) {
     // Is dead.
+    return;
+  }
+
+  if (entity.ownerId === 0) {
+    // Neutral entity, doesn't attack.
     return;
   }
 
@@ -108,13 +184,20 @@ function entityMove(entity, enemy) {
 }
 
 function entityAttack(entity, enemy) {
-  enemy.size -= 1;
+  enemy.size -= computeDamage(entity, enemy);
   sendToAll(makeDamageMessage(enemy, entity));
   if (enemy.size < MIN_HEALTH) {
     // Rip.
     entities = entities.filter(x => x.id !== enemy.id);
+    if (enemy.ownerId === 0) {
+      remainingNeutralEntities -= 1;
+    }
     sendToAll(makeDespawnMessage(enemy));
   }
+}
+
+function computeDamage(attacker, defender) {
+  return ELEMENTS_TABLE[attacker.element][defender.element];
 }
 
 function sendTo(player, data) {
@@ -143,8 +226,9 @@ function onSummon(player, message) {
   const x = message.x;
   const y = message.y;
   const size = message.size;
+  const element = message.element;
 
-  if (typeof x !== "number" || typeof y !== "number" || typeof size !== "number") {
+  if (typeof x !== "number" || typeof y !== "number" || typeof size !== "number" || typeof element !== "number") {
     throw new Error("Invalid summon");
   }
 
@@ -160,12 +244,17 @@ function onSummon(player, message) {
     throw new Error("Invalid summon size");
   }
 
+  if (element < 1 || element > 3) {
+    throw new Error("Invalid element");
+  }
+
   const entity = {
     id: currentEntityId++,
     ownerId: player.id,
     x,
     y,
     size,
+    element,
   };
 
   sendToAll(makeSummonMessage(entity));
@@ -188,6 +277,7 @@ function makeSummonMessage(entity) {
     x: Math.round(entity.x),
     y: Math.round(entity.y),
     size: entity.size,
+    element: entity.element,
   };
 }
 
