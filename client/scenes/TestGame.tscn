@@ -7,3 +7,5 @@
 script = ExtResource("1_h8j3r")
 
 [node name="Network" parent="." instance=ExtResource("1_0tdp2")]
+
+[node name="Entities" type="Node2D" parent="."]
