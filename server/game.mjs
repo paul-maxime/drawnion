@@ -127,7 +127,7 @@ function sendToAll(data) {
   }
 }
 
-function onImageReceived(player, message) {
+function onAvatarReceived(player, message) {
   if (player.pixels) {
     throw new Error("Image already received");
   }
