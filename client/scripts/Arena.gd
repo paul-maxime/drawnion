@@ -138,6 +138,7 @@ func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int,
 		return
 	var entity: Node2D = entity_scene.instantiate()
 	var sprite = Sprite2D.new()
+	sprite.name = "Sprite"
 	var color = _colors[owner_id]
 	entity.circle_color = color
 	sprite.texture = _avatars[owner_id]
@@ -182,7 +183,7 @@ func _on_entity_despawned(unit_id: int):
 	if unit == null:
 		print("Unknown entity")
 		return
-	unit.entity.queue_free()
+	unit.entity.explode_and_die()
 	_units.erase(unit_id)
 
 func _on_network_closed():

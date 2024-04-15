@@ -385,7 +385,7 @@ function makeDamageMessage(entity, attacker) {
     type: "damage",
     entityId: entity.id,
     attackerId: attacker ? attacker.id : 0,
-    newSize: entity.size,
+    newSize: Math.max(entity.size, MIN_HEALTH),
   };
 }
 

@@ -9,7 +9,6 @@ var center
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	print("wtf");
 	center = Vector2(float(IMAGE_WIDTH - 1) / 2, float(IMAGE_HEIGHT - 1) / 2)
 	pixels.resize(IMAGE_SIZE)
 	pixels.fill(0)
