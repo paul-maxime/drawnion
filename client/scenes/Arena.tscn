@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://c34rmuujfpmpr"]
+[gd_scene load_steps=24 format=3 uid="uid://c34rmuujfpmpr"]
 
 [ext_resource type="Script" path="res://scripts/Arena.gd" id="1_rkggh"]
 [ext_resource type="Texture2D" uid="uid://chd4bdxrgros4" path="res://assets/images/ui/panel_brown.png" id="2_5vsn1"]
@@ -21,6 +21,8 @@
 [ext_resource type="Texture2D" uid="uid://c3ppciqx30rx0" path="res://assets/images/ui/icons/elements_0_3.png" id="14_q8aq7"]
 [ext_resource type="Texture2D" uid="uid://d2fll06yrw0w7" path="res://assets/images/ui/icons/elements_2_3.png" id="15_1txbj"]
 [ext_resource type="Texture2D" uid="uid://bn072nna1k02p" path="res://assets/images/ui/icons/elements_3_3.png" id="16_c757a"]
+[ext_resource type="Texture2D" uid="uid://byncj62xdmdbd" path="res://assets/images/ui/arrowSilver_right.png" id="19_37xcv"]
+[ext_resource type="Texture2D" uid="uid://cmrv3jksngrys" path="res://assets/images/ui/arrowSilver_left.png" id="20_rgh75"]
 
 [node name="Arena" type="Node2D"]
 script = ExtResource("1_rkggh")
@@ -104,6 +106,28 @@ layout_mode = 2
 fill_mode = 3
 show_percentage = false
 script = ExtResource("5_h3icn")
+
+[node name="ManaCursor" type="HBoxContainer" parent="Gui/VBoxContainer/ManaBar"]
+z_index = 2
+layout_mode = 0
+offset_left = -11.0
+offset_top = 289.0
+offset_right = 51.0
+offset_bottom = 310.0
+
+[node name="NinePatchRect" type="NinePatchRect" parent="Gui/VBoxContainer/ManaBar/ManaCursor"]
+custom_minimum_size = Vector2(22, 21)
+layout_mode = 2
+texture = ExtResource("19_37xcv")
+
+[node name="Container" type="Container" parent="Gui/VBoxContainer/ManaBar/ManaCursor"]
+custom_minimum_size = Vector2(10, 20)
+layout_mode = 2
+
+[node name="NinePatchRect2" type="NinePatchRect" parent="Gui/VBoxContainer/ManaBar/ManaCursor"]
+custom_minimum_size = Vector2(22, 21)
+layout_mode = 2
+texture = ExtResource("20_rgh75")
 
 [node name="Network" parent="." instance=ExtResource("2_fgb4b")]
 unique_name_in_owner = true

@@ -1,11 +1,11 @@
 extends Node2D
 
 @export var selected_element = 1
+@export var summon_size = 16
 
 var entity_scene: PackedScene = preload ("res://scenes/TestEntity.tscn")
 var mana_particle_scene: PackedScene = preload ("res://scenes/ManaParticle.tscn")
 
-var _rng = RandomNumberGenerator.new()
 var _units = {};
 
 var IMAGE_WIDTH = 16
@@ -99,8 +99,7 @@ func _input(event):
 			elif pos.y >= $FightingZone.position.y + $FightingZone.size.y:
 				return
 			var spawn_pos = _closest_server_spawn_from_pos(pos)
-			var size = (_rng.randi() % 4 + 1) * 16
-			$Network.sendSummon(spawn_pos.x, spawn_pos.y, size, selected_element)
+			$Network.sendSummon(spawn_pos.x, spawn_pos.y, summon_size, selected_element)
 
 func _client_pos_to_server_pos(pos: Vector2):
 		return Vector2((pos.x - $FightingZone.position.x) / $FightingZone.size.x * (server_width - 1), (pos.y - $FightingZone.position.y) / $FightingZone.size.y * (server_height - 1))
@@ -211,20 +210,18 @@ func _get_color_for_player(player_id: int):
 	return _colors[player_id % _colors.size()]
 
 func _on_entity_moved(unit_id: int, x: int, y: int):
-	#print("Entity %d moved to (%d, %d)" % [unit_id, x, y])
 	var unit = _units.get(unit_id)
 	if unit == null:
-		print("Unknown entity")
+		print("Unknown entity %d moved to (%d, %d)" % [unit_id, x, y])
 		return
 	unit.position_start = unit.entity.position
 	unit.position_target = _server_pos_to_client_pos(Vector2(x, y))
 	unit.moving_time = 0
 
-func _on_entity_damaged(unit_id: int, _attacker_id: int, new_size: int):
-	#print("Entity %d attacked by %d, new size %d" % [unit_id, attacker_id, new_size])
+func _on_entity_damaged(unit_id: int, attacker_id: int, new_size: int):
 	var unit = _units.get(unit_id)
 	if unit == null:
-		print("Unknown entity")
+		print("Unknown entity %d attacked by %d, new size %d" % [unit_id, attacker_id, new_size])
 		return
 	var ratio = $FightingZone.size.x / server_width
 	unit.entity.scale = Vector2(float(new_size) / IMAGE_WIDTH * ratio, float(new_size) / IMAGE_HEIGHT * ratio)
@@ -235,10 +232,9 @@ func _on_entity_killed(attacker_id: int, defender_id: int, mana_gain: int):
 		_spawn_mana_particle(defender_id)
 
 func _on_entity_despawned(unit_id: int):
-	#print("Entity %d despawned" % [unit_id])
 	var unit = _units.get(unit_id)
 	if unit == null:
-		print("Unknown entity")
+		print("Unknown entity %d despawned" % [unit_id])
 		return
 	unit.entity.explode_and_die()
 	_units.erase(unit_id)
