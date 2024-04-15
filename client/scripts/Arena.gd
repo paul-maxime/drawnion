@@ -86,11 +86,11 @@ func _input(event):
 			$Network.sendSummon(spawn_pos.x, spawn_pos.y, size, element)
 
 func _client_pos_to_server_pos(pos: Vector2):
-		print("(", pos.x, " - ", $FightingZone.position.x, ") / ", $FightingZone.scale.x, " * ", server_width)
-		return Vector2((pos.x - $FightingZone.position.x) / $FightingZone.scale.x * (server_width - 1), (pos.y - $FightingZone.position.y) / $FightingZone.scale.y * (server_height - 1))
+		print("(", pos.x, " - ", $FightingZone.position.x, ") / ", $FightingZone.size.x, " * ", server_width)
+		return Vector2((pos.x - $FightingZone.position.x) / $FightingZone.size.x * (server_width - 1), (pos.y - $FightingZone.position.y) / $FightingZone.size.y * (server_height - 1))
 
 func _server_pos_to_client_pos(pos: Vector2):
-		return Vector2(pos.x / (server_width - 1) * $FightingZone.scale.x + $FightingZone.position.x, pos.y / (server_height - 1) * $FightingZone.scale.y + $FightingZone.position.y)
+		return Vector2(pos.x / (server_width - 1) * $FightingZone.size.x + $FightingZone.position.x, pos.y / (server_height - 1) * $FightingZone.size.y + $FightingZone.position.y)
 
 func _closest_server_spawn_from_pos(pos: Vector2):
 	print("click ", pos)
@@ -102,21 +102,21 @@ func _closest_server_spawn_from_pos(pos: Vector2):
 
 func _closest_client_spawn_from_pos(pos: Vector2):
 	var distance_bot = pos.distance_to(Vector2(pos.x, $FightingZone.position.y))
-	var distance_top = pos.distance_to(Vector2(pos.x, $FightingZone.position.y + $FightingZone.scale.y))
+	var distance_top = pos.distance_to(Vector2(pos.x, $FightingZone.position.y + $FightingZone.size.y))
 	var distance_y = min(distance_top, distance_bot)
 	var distance_left = pos.distance_to(Vector2($FightingZone.position.x, pos.y))
-	var distance_right = pos.distance_to(Vector2($FightingZone.position.x + $FightingZone.scale.x, pos.y))
+	var distance_right = pos.distance_to(Vector2($FightingZone.position.x + $FightingZone.size.x, pos.y))
 	var distance_x = min(distance_left, distance_right)
 	if distance_x < distance_y:
 		if distance_left < distance_right:
 			return Vector2($FightingZone.position.x, pos.y)
 		else:
-			return Vector2($FightingZone.position.x + $FightingZone.scale.x, pos.y)
+			return Vector2($FightingZone.position.x + $FightingZone.size.x, pos.y)
 	else:
 		if distance_bot < distance_top:
 			return Vector2(pos.x, $FightingZone.position.y)
 		else:
-			return Vector2(pos.x, $FightingZone.position.y + $FightingZone.scale.y)
+			return Vector2(pos.x, $FightingZone.position.y + $FightingZone.size.y)
 
 func _on_game_joined(player_id: int, map_width: int, map_height: int):
 	print("Joined the game, player id: %d" % [player_id])
@@ -161,7 +161,7 @@ func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int,
 	sprite.material = ShaderMaterial.new()
 	sprite.material.set_shader_parameter("line_color", Color(color.r, color.g, color.b, 0.7))
 	sprite.material.shader = _avatar_shader
-	var ratio = $FightingZone.scale.x / server_width
+	var ratio = $FightingZone.size.x / server_width
 	entity.position = _server_pos_to_client_pos(Vector2(x, y))
 	entity.scale = Vector2(float(size) / IMAGE_WIDTH * ratio, float(size) / IMAGE_HEIGHT * ratio)
 	entity.add_child(sprite)
@@ -195,7 +195,7 @@ func _on_entity_damaged(unit_id: int, attacker_id: int, new_size: int):
 	if unit == null:
 		print("Unknown entity")
 		return
-	var ratio = $FightingZone.scale.x / server_width
+	var ratio = $FightingZone.size.x / server_width
 	unit.entity.scale = Vector2(float(new_size) / IMAGE_WIDTH * ratio, float(new_size) / IMAGE_HEIGHT * ratio)
 
 func _on_entity_despawned(unit_id: int):
