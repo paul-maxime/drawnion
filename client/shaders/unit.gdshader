@@ -94,7 +94,7 @@ void fragment(){
 	p *= 3.;
 	
 	float rz = flow(p);
-	vec3 col = inside_color / rz;
+	vec3 col = vec3(line_color.r, line_color.g, line_color.b) / rz;
 	if (intense) {
 		col = pow(col, vec3(1.4));
 	}
@@ -113,6 +113,6 @@ void fragment(){
 		outline += texture(TEXTURE, scaled_shifted_uv + OFFSETS[i]*width_size).a;
 	}
 	outline = min(outline, 1.0);
-	inputColor = vec4(col, inputColor.a);
-	COLOR = mix(inputColor, line_color, outline - inputColor.a);
+	vec4 border = vec4(col, line_color.a);
+	COLOR = mix(inputColor, border, outline - inputColor.a);
 }
