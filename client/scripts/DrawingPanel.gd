@@ -5,13 +5,12 @@ var IMAGE_HEIGHT = 16
 var IMAGE_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT
 
 var pixels: Array[int] = []
-var arena_scene: PackedScene
 var center
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	print("wtf");
 	center = Vector2(float(IMAGE_WIDTH - 1) / 2, float(IMAGE_HEIGHT - 1) / 2)
-	arena_scene = preload ("res://scenes/Arena.tscn")
 	pixels.resize(IMAGE_SIZE)
 	pixels.fill(0)
 
@@ -66,7 +65,7 @@ func _on_start_game_pressed():
 	if _pixel_ratio() < 0.20:
 		# TODO print error on label control
 		return
-	var arena = arena_scene.instantiate()
+	var arena = load("res://scenes/Arena.tscn").instantiate()
 	arena.set_drawing(pixels)
 	get_tree().root.add_child(arena)
 	get_node("/root/Drawing").queue_free()
