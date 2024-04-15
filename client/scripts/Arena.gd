@@ -173,7 +173,7 @@ func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int,
 	if element == 1:
 		sprite.material.set_shader_parameter("line_color", Color("#36db3e")) # feuille
 	elif element == 2:
-		sprite.material.set_shader_parameter("line_color", Color("#ff2e00")) # feu
+		sprite.material.set_shader_parameter("line_color", Color("#ff1814")) # feu
 	elif element == 3:
 		sprite.material.set_shader_parameter("line_color", Color("#20aad9")) # eau
 	var ratio = $FightingZone.size.x / server_width
