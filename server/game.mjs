@@ -106,6 +106,7 @@ export function onMessage(player, message) {
 export function tick() {
   if (players.length === 0) {
     // Pause the game when no one is online.
+    setTimeout(tick, TICK_SPEED);
     return;
   }
 
