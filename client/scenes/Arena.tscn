@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://c34rmuujfpmpr"]
+[gd_scene load_steps=22 format=3 uid="uid://c34rmuujfpmpr"]
 
 [ext_resource type="Script" path="res://scripts/Arena.gd" id="1_rkggh"]
 [ext_resource type="Texture2D" uid="uid://chd4bdxrgros4" path="res://assets/images/ui/panel_brown.png" id="2_5vsn1"]
@@ -8,8 +8,10 @@
 [ext_resource type="Script" path="res://scripts/UI/ElementContainer.gd" id="4_txrh6"]
 [ext_resource type="Script" path="res://scripts/UI/ManaBar.gd" id="5_h3icn"]
 [ext_resource type="Script" path="res://scripts/UI/ElementButton.gd" id="5_wkbo6"]
+[ext_resource type="Script" path="res://scripts/Arrow.gd" id="6_8sdbv"]
 [ext_resource type="Texture2D" uid="uid://cbdh3cm5qjgd1" path="res://assets/images/ui/icons/elements_0_0.png" id="6_acogm"]
 [ext_resource type="Texture2D" uid="uid://8rytmlllbl74" path="res://assets/images/ui/icons/elements_2_0.png" id="7_8khl5"]
+[ext_resource type="Texture2D" uid="uid://cw8r5servnric" path="res://assets/images/ui/arrowBrown_right.png" id="7_ict1c"]
 [ext_resource type="Texture2D" uid="uid://c8jpeby3204a3" path="res://assets/images/ui/icons/elements_3_0.png" id="8_vvtfi"]
 [ext_resource type="Texture2D" uid="uid://cg4h87vkjp3mq" path="res://assets/images/ui/icons/elements_1_1.png" id="9_cmwfv"]
 [ext_resource type="Texture2D" uid="uid://cfy48gkeomd0y" path="res://assets/images/ui/icons/elements_0_1.png" id="10_ydyjp"]
@@ -107,3 +109,9 @@ script = ExtResource("5_h3icn")
 unique_name_in_owner = true
 
 [node name="Entities" type="Node2D" parent="."]
+
+[node name="Arrow" type="Node2D" parent="."]
+script = ExtResource("6_8sdbv")
+
+[node name="Sprite" type="Sprite2D" parent="Arrow"]
+texture = ExtResource("7_ict1c")

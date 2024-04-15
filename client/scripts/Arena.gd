@@ -80,6 +80,11 @@ func _input(event):
 	if server_width == 0:
 		# haven't received map size yet
 		return
+	if event is InputEventMouseMotion:
+		var pos: Vector2 = get_local_mouse_position()
+		var client_pos = _closest_client_spawn_from_pos(pos)
+		var server_pos = _client_pos_to_server_pos(client_pos)
+		$Arrow.update_position(client_pos, server_pos)
 	if event is InputEventMouseButton:
 		if event.is_pressed() and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 			var pos: Vector2 = get_local_mouse_position()
@@ -138,6 +143,7 @@ func _on_game_joined(player_id: int, map_width: int, map_height: int):
 	_player_id = player_id
 	server_width = map_width
 	server_height = map_height
+	$Arrow.set_map_size(map_width, map_height)
 	if _avatar == null or _avatar.is_empty():
 		_avatar = []
 		_avatar.resize(IMAGE_SIZE)
