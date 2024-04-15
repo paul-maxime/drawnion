@@ -74,6 +74,7 @@ export function onConnected(player) {
   for (const entity of entities) {
     sendTo(player, makeSummonMessage(entity));
   }
+  sendWebhookIfRequired();
 }
 
 export function onDisconnected(player) {
@@ -88,6 +89,7 @@ export function onDisconnected(player) {
     }
   }
   entities = entities.filter(x => x.ownerId !== player.id);
+  sendWebhookIfRequired();
 }
 
 export function onMessage(player, message) {
@@ -102,6 +104,11 @@ export function onMessage(player, message) {
 }
 
 export function tick() {
+  if (players.length === 0) {
+    // Pause the game when no one is online.
+    return;
+  }
+
   for (const player of players) {
     playerTick(player);
   }
@@ -260,7 +267,6 @@ function entityAttack(entity, enemy) {
     }
 
     despawnDeadEntity(enemy);
-    sendToAll(makeDespawnMessage(enemy));
   }
 }
 
@@ -451,4 +457,21 @@ function vectorNormalize(v) {
 
 function vectorNorm(v) {
   return Math.sqrt(v.x ** 2 + v.y ** 2);
+}
+
+function sendWebhookIfRequired() {
+  const WEBHOOK_URL = process.env.WEBHOOK_URL;
+  if (!WEBHOOK_URL) return;
+
+  fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      "content": `${players.length} player${players.length !== 1 ? 's' : ''} online`
+    })
+  }).then(response => response.text()).then(() => {
+    console.log("Webhook sent!")
+  }).catch(console.error);
 }
