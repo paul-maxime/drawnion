@@ -46,8 +46,6 @@ func _update_max_value(max_mana: int):
 		for level in _step_entities:
 			var entity = _step_entities[level]
 			var mana_ratio = float(log(level) * log(level)) / new_max_value
-			print(level, " / ", max_mana)
-			print(size.y, " * ", mana_ratio)
 			entity.position.y = size.y - size.y * mana_ratio - entity.size.y / 2
 			if _targeted_level == level:
 				$ManaCursor.position.y = size.y - size.y * mana_ratio - $ManaCursor.size.y / 2
