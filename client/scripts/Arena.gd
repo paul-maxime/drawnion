@@ -1,5 +1,7 @@
 extends Node2D
 
+@export var selected_element = 1
+
 var entity_scene: PackedScene = preload ("res://scenes/TestEntity.tscn")
 
 var _rng = RandomNumberGenerator.new()
@@ -81,11 +83,18 @@ func _input(event):
 	if event is InputEventMouseButton:
 		if event.is_pressed() and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 			var pos: Vector2 = get_local_mouse_position()
+			if pos.x < $FightingZone.position.x:
+				return
+			elif pos.x >= $FightingZone.position.x + $FightingZone.size.x:
+				return
+			if pos.y < $FightingZone.position.y:
+				return
+			elif pos.y >= $FightingZone.position.y + $FightingZone.size.y:
+				return
 			var spawn_pos = _closest_server_spawn_from_pos(pos)
-			print(spawn_pos)
 			var size = (_rng.randi() % 4 + 1) * 16;
 			var element = _rng.randi() % 3 + 1;
-			$Network.sendSummon(spawn_pos.x, spawn_pos.y, size, element)
+			$Network.sendSummon(spawn_pos.x, spawn_pos.y, size, selected_element)
 
 func _client_pos_to_server_pos(pos: Vector2):
 		return Vector2((pos.x - $FightingZone.position.x) / $FightingZone.size.x * (server_width - 1), (pos.y - $FightingZone.position.y) / $FightingZone.size.y * (server_height - 1))

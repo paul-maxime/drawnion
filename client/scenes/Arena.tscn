@@ -1,10 +1,24 @@
-[gd_scene load_steps=6 format=3 uid="uid://c34rmuujfpmpr"]
+[gd_scene load_steps=20 format=3 uid="uid://c34rmuujfpmpr"]
 
 [ext_resource type="Script" path="res://scripts/Arena.gd" id="1_rkggh"]
 [ext_resource type="Texture2D" uid="uid://chd4bdxrgros4" path="res://assets/images/ui/panel_brown.png" id="2_5vsn1"]
 [ext_resource type="Texture2D" uid="uid://cjf2ehmu5gg6c" path="res://assets/images/ui/panel_blue.png" id="2_cqs1u"]
 [ext_resource type="PackedScene" uid="uid://jnm05j8xh3nt" path="res://scenes/Network.tscn" id="2_fgb4b"]
+[ext_resource type="Texture2D" uid="uid://t54g3g33ejxh" path="res://assets/images/ui/icons/elements_1_0.png" id="4_jhk16"]
+[ext_resource type="Script" path="res://scripts/UI/ElementContainer.gd" id="4_txrh6"]
 [ext_resource type="Script" path="res://scripts/UI/ManaBar.gd" id="5_h3icn"]
+[ext_resource type="Script" path="res://scripts/UI/ElementButton.gd" id="5_wkbo6"]
+[ext_resource type="Texture2D" uid="uid://cbdh3cm5qjgd1" path="res://assets/images/ui/icons/elements_0_0.png" id="6_acogm"]
+[ext_resource type="Texture2D" uid="uid://8rytmlllbl74" path="res://assets/images/ui/icons/elements_2_0.png" id="7_8khl5"]
+[ext_resource type="Texture2D" uid="uid://c8jpeby3204a3" path="res://assets/images/ui/icons/elements_3_0.png" id="8_vvtfi"]
+[ext_resource type="Texture2D" uid="uid://cg4h87vkjp3mq" path="res://assets/images/ui/icons/elements_1_1.png" id="9_cmwfv"]
+[ext_resource type="Texture2D" uid="uid://cfy48gkeomd0y" path="res://assets/images/ui/icons/elements_0_1.png" id="10_ydyjp"]
+[ext_resource type="Texture2D" uid="uid://bi1r1yurq64ds" path="res://assets/images/ui/icons/elements_2_1.png" id="11_t5nnx"]
+[ext_resource type="Texture2D" uid="uid://dpojqoeejq24p" path="res://assets/images/ui/icons/elements_3_1.png" id="12_d5dwn"]
+[ext_resource type="Texture2D" uid="uid://bjghvsm8607sr" path="res://assets/images/ui/icons/elements_1_3.png" id="13_fdm3y"]
+[ext_resource type="Texture2D" uid="uid://c3ppciqx30rx0" path="res://assets/images/ui/icons/elements_0_3.png" id="14_q8aq7"]
+[ext_resource type="Texture2D" uid="uid://d2fll06yrw0w7" path="res://assets/images/ui/icons/elements_2_3.png" id="15_1txbj"]
+[ext_resource type="Texture2D" uid="uid://bn072nna1k02p" path="res://assets/images/ui/icons/elements_3_3.png" id="16_c757a"]
 
 [node name="Arena" type="Node2D"]
 script = ExtResource("1_rkggh")
@@ -20,9 +34,9 @@ patch_margin_bottom = 8
 
 [node name="FightingZone" type="NinePatchRect" parent="."]
 offset_left = 24.0
-offset_top = 40.0
+offset_top = 56.0
 offset_right = 1060.0
-offset_bottom = 623.0
+offset_bottom = 639.0
 texture = ExtResource("2_cqs1u")
 patch_margin_left = 54
 patch_margin_top = 7
@@ -37,12 +51,54 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ManaBar" type="ProgressBar" parent="Gui"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Gui"]
 layout_mode = 0
 offset_left = 1084.0
-offset_top = 40.0
+offset_top = 56.0
 offset_right = 1124.0
-offset_bottom = 623.0
+offset_bottom = 639.0
+
+[node name="ElementContainer" type="VBoxContainer" parent="Gui/VBoxContainer"]
+layout_mode = 2
+script = ExtResource("4_txrh6")
+
+[node name="FireButton" type="Button" parent="Gui/VBoxContainer/ElementContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+icon = ExtResource("4_jhk16")
+script = ExtResource("5_wkbo6")
+button_off_icon = ExtResource("6_acogm")
+button_on_1_icon = ExtResource("4_jhk16")
+button_on_2_icon = ExtResource("7_8khl5")
+button_on_3_icon = ExtResource("8_vvtfi")
+
+[node name="GrassButton" type="Button" parent="Gui/VBoxContainer/ElementContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+toggle_mode = true
+icon = ExtResource("9_cmwfv")
+script = ExtResource("5_wkbo6")
+button_off_icon = ExtResource("10_ydyjp")
+button_on_1_icon = ExtResource("9_cmwfv")
+button_on_2_icon = ExtResource("11_t5nnx")
+button_on_3_icon = ExtResource("12_d5dwn")
+
+[node name="WaterButton" type="Button" parent="Gui/VBoxContainer/ElementContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+toggle_mode = true
+icon = ExtResource("13_fdm3y")
+script = ExtResource("5_wkbo6")
+button_off_icon = ExtResource("14_q8aq7")
+button_on_1_icon = ExtResource("13_fdm3y")
+button_on_2_icon = ExtResource("15_1txbj")
+button_on_3_icon = ExtResource("16_c757a")
+
+[node name="ManaBar" type="ProgressBar" parent="Gui/VBoxContainer"]
+custom_minimum_size = Vector2(0, 433)
+layout_mode = 2
 fill_mode = 3
 show_percentage = false
 script = ExtResource("5_h3icn")
