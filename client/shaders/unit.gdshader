@@ -114,5 +114,5 @@ void fragment(){
 	}
 	outline = min(outline, 1.0);
 	vec4 border = vec4(col, line_color.a);
-	COLOR = mix(inputColor, border, outline - inputColor.a);
+	COLOR = mix(inputColor, line_color, outline - inputColor.a);
 }

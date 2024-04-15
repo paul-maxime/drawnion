@@ -171,11 +171,11 @@ func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int,
 	sprite.material.set_shader_parameter("timeScaleFactor", 1.0)
 	#sprite.material.set_shader_parameter("width", 0.1)
 	if element == 1:
-		sprite.material.set_shader_parameter("line_color", Color("#36db3e")) # feuille
+		sprite.material.set_shader_parameter("line_color", Color("#5DDE87")) # feuille
 	elif element == 2:
-		sprite.material.set_shader_parameter("line_color", Color("#ff1814")) # feu
+		sprite.material.set_shader_parameter("line_color", Color("#EB564B")) # feu
 	elif element == 3:
-		sprite.material.set_shader_parameter("line_color", Color("#20aad9")) # eau
+		sprite.material.set_shader_parameter("line_color", Color("#86A7ED")) # eau
 	var ratio = $FightingZone.size.x / server_width
 	entity.position = _server_pos_to_client_pos(Vector2(x, y))
 	entity.scale = Vector2(float(size) / IMAGE_WIDTH * ratio, float(size) / IMAGE_HEIGHT * ratio)
