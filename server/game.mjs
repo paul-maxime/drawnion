@@ -306,8 +306,10 @@ function onAvatarReceived(player, message) {
   if (!Array.isArray(pixels) || pixels.length !== AVATAR_SIZE || pixels.some(x => typeof x !== "number")) {
     throw new Error("Invalid avatar");
   }
-  if (pixels.filter(x => x === 1).length < 50) {
-    throw new Error("Avatar not filled enough");
+
+  const black_pixels = pixels.filter(x => x === 1).length
+  if (black_pixels < 30 || black_pixels > 90) {
+    throw new Error("Invalid avatar");
   }
 
   player.pixels = pixels;
