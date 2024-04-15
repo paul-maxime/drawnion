@@ -1,27 +1,32 @@
 [gd_scene load_steps=5 format=3 uid="uid://c34rmuujfpmpr"]
 
 [ext_resource type="Script" path="res://scripts/Arena.gd" id="1_rkggh"]
+[ext_resource type="Texture2D" uid="uid://chd4bdxrgros4" path="res://assets/images/ui/panel_brown.png" id="2_5vsn1"]
+[ext_resource type="Texture2D" uid="uid://cjf2ehmu5gg6c" path="res://assets/images/ui/panel_blue.png" id="2_cqs1u"]
 [ext_resource type="PackedScene" uid="uid://jnm05j8xh3nt" path="res://scenes/Network.tscn" id="2_fgb4b"]
-
-[sub_resource type="CanvasTexture" id="CanvasTexture_4im3p"]
-
-[sub_resource type="CanvasTexture" id="CanvasTexture_02mj6"]
 
 [node name="Arena" type="Node2D"]
 script = ExtResource("1_rkggh")
 
-[node name="SummoningZone" type="Sprite2D" parent="."]
-modulate = Color(0.345098, 0.345098, 0.345098, 1)
-scale = Vector2(1122, 648)
-texture = SubResource("CanvasTexture_4im3p")
-centered = false
+[node name="SummoningZone" type="NinePatchRect" parent="."]
+offset_right = 1152.0
+offset_bottom = 648.0
+texture = ExtResource("2_5vsn1")
+patch_margin_left = 54
+patch_margin_top = 7
+patch_margin_right = 20
+patch_margin_bottom = 8
 
-[node name="FightingZone" type="Sprite2D" parent="."]
-modulate = Color(0.141176, 0.141176, 0.141176, 1)
-position = Vector2(18, 18)
-scale = Vector2(1088, 612)
-texture = SubResource("CanvasTexture_02mj6")
-centered = false
+[node name="FightingZone" type="NinePatchRect" parent="."]
+offset_left = 18.0
+offset_top = 10.0
+offset_right = 1134.0
+offset_bottom = 638.0
+texture = ExtResource("2_cqs1u")
+patch_margin_left = 54
+patch_margin_top = 7
+patch_margin_right = 8
+patch_margin_bottom = 20
 
 [node name="Network" parent="." instance=ExtResource("2_fgb4b")]
 
