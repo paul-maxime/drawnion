@@ -99,6 +99,14 @@ func _closest_server_spawn_from_pos(pos: Vector2):
 	return server_pos
 
 func _closest_client_spawn_from_pos(pos: Vector2):
+	if pos.x < 0:
+		pos.x = 0
+	elif pos.x >= $FightingZone.size.x:
+		pos.x = $FightingZone.size.x - 1
+	if pos.y < 0:
+		pos.y = 0
+	elif pos.y >= $FightingZone.size.y:
+		pos.y = $FightingZone.size.y - 1
 	var distance_bot = pos.distance_to(Vector2(pos.x, $FightingZone.position.y))
 	var distance_top = pos.distance_to(Vector2(pos.x, $FightingZone.position.y + $FightingZone.size.y))
 	var distance_y = min(distance_top, distance_bot)
