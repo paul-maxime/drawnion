@@ -45,7 +45,7 @@ const MAX_MANA = 100000;
 
 const AVATAR_SIZE = 16 * 16;
 
-const TICKS_PER_DECAY = 50;
+const TICKS_PER_DECAY = 20;
 
 let players = [];
 let entities = [];
