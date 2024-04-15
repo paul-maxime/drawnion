@@ -9,6 +9,7 @@ signal entity_summoned(entity_id: int, owner_id: int, x: int, y: int, size: int,
 signal entity_moved(entity_id: int, x: int, y: int)
 signal entity_damaged(entity_id: int, attacker_id: int, new_size: int)
 signal entity_despawned(entity_id: int)
+signal player_mana(mana: int, max_mana: int)
 signal network_closed()
 
 func _ready():
@@ -47,6 +48,8 @@ func _on_message_received(message):
 			entity_damaged.emit(message.entityId, message.attackerId, message.newSize)
 		"despawn":
 			entity_despawned.emit(message.entityId)
+		"mana":
+			player_mana.emit(message.mana, message.max)
 		_:
 			print("Unknown message: ", message)
 

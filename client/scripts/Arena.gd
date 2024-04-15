@@ -86,18 +86,14 @@ func _input(event):
 			$Network.sendSummon(spawn_pos.x, spawn_pos.y, size, element)
 
 func _client_pos_to_server_pos(pos: Vector2):
-		print("(", pos.x, " - ", $FightingZone.position.x, ") / ", $FightingZone.size.x, " * ", server_width)
 		return Vector2((pos.x - $FightingZone.position.x) / $FightingZone.size.x * (server_width - 1), (pos.y - $FightingZone.position.y) / $FightingZone.size.y * (server_height - 1))
 
 func _server_pos_to_client_pos(pos: Vector2):
 		return Vector2(pos.x / (server_width - 1) * $FightingZone.size.x + $FightingZone.position.x, pos.y / (server_height - 1) * $FightingZone.size.y + $FightingZone.position.y)
 
 func _closest_server_spawn_from_pos(pos: Vector2):
-	print("click ", pos)
 	var client_pos = _closest_client_spawn_from_pos(pos)
-	print("client ", client_pos)
 	var server_pos = _client_pos_to_server_pos(client_pos)
-	print("server ", server_pos)
 	return server_pos
 
 func _closest_client_spawn_from_pos(pos: Vector2):
@@ -148,7 +144,7 @@ func _on_avatar_received(player_id: int, pixels: Array):
 	_create_avatar(player_id, pixels)
 
 func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int, _element: int):
-	print("Entity %d summoned at (%d, %d), owner %d, size %d" % [unit_id, x, y, owner_id, size])
+	#print("Entity %d summoned at (%d, %d), owner %d, size %d" % [unit_id, x, y, owner_id, size])
 	if _avatars.get(owner_id) == null:
 		printerr("Unknown owner ID for entity ", owner_id)
 		return
@@ -180,7 +176,7 @@ func _get_color_for_player(player_id: int):
 	return _colors[player_id % _colors.size()]
 
 func _on_entity_moved(unit_id: int, x: int, y: int):
-	print("Entity %d moved to (%d, %d)" % [unit_id, x, y])
+	#print("Entity %d moved to (%d, %d)" % [unit_id, x, y])
 	var unit = _units.get(unit_id)
 	if unit == null:
 		print("Unknown entity")
@@ -190,7 +186,7 @@ func _on_entity_moved(unit_id: int, x: int, y: int):
 	unit.moving_time = 0
 
 func _on_entity_damaged(unit_id: int, attacker_id: int, new_size: int):
-	print("Entity %d attacked by %d, new size %d" % [unit_id, attacker_id, new_size])
+	#print("Entity %d attacked by %d, new size %d" % [unit_id, attacker_id, new_size])
 	var unit = _units.get(unit_id)
 	if unit == null:
 		print("Unknown entity")
@@ -199,7 +195,7 @@ func _on_entity_damaged(unit_id: int, attacker_id: int, new_size: int):
 	unit.entity.scale = Vector2(float(new_size) / IMAGE_WIDTH * ratio, float(new_size) / IMAGE_HEIGHT * ratio)
 
 func _on_entity_despawned(unit_id: int):
-	print("Entity %d despawned" % [unit_id])
+	#print("Entity %d despawned" % [unit_id])
 	var unit = _units.get(unit_id)
 	if unit == null:
 		print("Unknown entity")

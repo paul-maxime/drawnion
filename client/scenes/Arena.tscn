@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://c34rmuujfpmpr"]
+[gd_scene load_steps=6 format=3 uid="uid://c34rmuujfpmpr"]
 
 [ext_resource type="Script" path="res://scripts/Arena.gd" id="1_rkggh"]
 [ext_resource type="Texture2D" uid="uid://chd4bdxrgros4" path="res://assets/images/ui/panel_brown.png" id="2_5vsn1"]
 [ext_resource type="Texture2D" uid="uid://cjf2ehmu5gg6c" path="res://assets/images/ui/panel_blue.png" id="2_cqs1u"]
 [ext_resource type="PackedScene" uid="uid://jnm05j8xh3nt" path="res://scenes/Network.tscn" id="2_fgb4b"]
+[ext_resource type="Script" path="res://scripts/UI/ManaBar.gd" id="5_h3icn"]
 
 [node name="Arena" type="Node2D"]
 script = ExtResource("1_rkggh")
@@ -18,16 +19,35 @@ patch_margin_right = 20
 patch_margin_bottom = 8
 
 [node name="FightingZone" type="NinePatchRect" parent="."]
-offset_left = 18.0
-offset_top = 10.0
-offset_right = 1134.0
-offset_bottom = 638.0
+offset_left = 24.0
+offset_top = 40.0
+offset_right = 1060.0
+offset_bottom = 623.0
 texture = ExtResource("2_cqs1u")
 patch_margin_left = 54
 patch_margin_top = 7
 patch_margin_right = 8
 patch_margin_bottom = 20
 
+[node name="Gui" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ManaBar" type="ProgressBar" parent="Gui"]
+layout_mode = 0
+offset_left = 1084.0
+offset_top = 40.0
+offset_right = 1124.0
+offset_bottom = 623.0
+fill_mode = 3
+show_percentage = false
+script = ExtResource("5_h3icn")
+
 [node name="Network" parent="." instance=ExtResource("2_fgb4b")]
+unique_name_in_owner = true
 
 [node name="Entities" type="Node2D" parent="."]
