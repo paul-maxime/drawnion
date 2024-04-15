@@ -115,3 +115,5 @@ script = ExtResource("6_8sdbv")
 
 [node name="Sprite" type="Sprite2D" parent="Arrow"]
 texture = ExtResource("7_ict1c")
+
+[node name="ManaParticles" type="Node" parent="."]

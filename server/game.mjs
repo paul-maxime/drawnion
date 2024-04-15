@@ -34,13 +34,18 @@ const MAX_NEUTRAL_ENTITIES = 10;
 const TICKS_BETWEEN_NEUTRAL_SPAWNS = 5;
 const NEUTRAL_SIZES = [16, 16, 16, 16, 16, 24, 24, 24, 24, 32, 32, 32, 48, 48, 64];
 
-const MANA_PER_TICK = 2;
-const INITIAL_MANA = 50;
-const MAX_MANA = 300;
+const MANA_PER_TICK = [
+  [50000, 5],
+  [20000, 20],
+  [5000, 50],
+  [0, 200],
+];
+const INITIAL_MANA = 5000;
+const MAX_MANA = 100000;
 
 const AVATAR_SIZE = 16 * 16;
 
-const TICKS_PER_DECAY = 5;
+const TICKS_PER_DECAY = 50;
 
 let players = [];
 let entities = [];
@@ -168,7 +173,14 @@ function playerTick(player) {
     // Haven't joined yet, probably.
   }
 
-  giveManaToPlayer(player, MANA_PER_TICK);
+  let manaGain = 0;
+  for (const [from, amount] of MANA_PER_TICK) {
+    if (player.mana >= from) {
+      manaGain = amount;
+      break;
+    }
+  }
+  giveManaToPlayer(player, manaGain);
 }
 
 function giveManaToPlayer(player, amount) {
@@ -260,7 +272,7 @@ function entityAttack(entity, enemy) {
     // Rip.
     const owner = getPlayerFromId(entity.ownerId);
     if (owner) {
-      const manaGain = enemy.originalSize;
+      const manaGain = enemy.originalSize * 100;
       giveManaToPlayer(owner, manaGain);
       sendTo(owner, makeKillMessage(entity, enemy, manaGain));
     } else {
@@ -332,7 +344,9 @@ function onSummon(player, message) {
     throw new Error("Invalid element");
   }
 
-  if (player.mana < size) {
+  const manaCost = size * 100;
+
+  if (player.mana < manaCost) {
     console.log("Summoning without enough mana!");
     return;
   }
@@ -353,7 +367,7 @@ function onSummon(player, message) {
     return;
   }
 
-  giveManaToPlayer(player, -size);
+  giveManaToPlayer(player, -manaCost);
   sendToAll(makeSummonMessage(entity));
   entities.push(entity);
 }

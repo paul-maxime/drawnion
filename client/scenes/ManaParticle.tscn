@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://bvwia7fhp16h4"]
+
+[ext_resource type="Script" path="res://scripts/ManaParticle.gd" id="1_8ei5b"]
+[ext_resource type="Texture2D" uid="uid://btoy3vmrr1r48" path="res://assets/images/ui/element_blue_diamond.png" id="1_dybok"]
+
+[node name="ManaParticle" type="Node2D"]
+script = ExtResource("1_8ei5b")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.25, 0.25)
+texture = ExtResource("1_dybok")

@@ -3,6 +3,7 @@ extends Node2D
 @export var selected_element = 1
 
 var entity_scene: PackedScene = preload ("res://scenes/TestEntity.tscn")
+var mana_particle_scene: PackedScene = preload ("res://scenes/ManaParticle.tscn")
 
 var _rng = RandomNumberGenerator.new()
 var _units = {};
@@ -66,6 +67,7 @@ func _ready():
 	$Network.entity_summoned.connect(_on_entity_summoned)
 	$Network.entity_moved.connect(_on_entity_moved)
 	$Network.entity_damaged.connect(_on_entity_damaged)
+	$Network.entity_killed.connect(_on_entity_killed)
 	$Network.entity_despawned.connect(_on_entity_despawned)
 	$Network.network_closed.connect(_on_network_closed)
 
@@ -97,8 +99,7 @@ func _input(event):
 			elif pos.y >= $FightingZone.position.y + $FightingZone.size.y:
 				return
 			var spawn_pos = _closest_server_spawn_from_pos(pos)
-			var size = (_rng.randi() % 4 + 1) * 16;
-			var element = _rng.randi() % 3 + 1;
+			var size = (_rng.randi() % 4 + 1) * 16
 			$Network.sendSummon(spawn_pos.x, spawn_pos.y, size, selected_element)
 
 func _client_pos_to_server_pos(pos: Vector2):
@@ -228,6 +229,11 @@ func _on_entity_damaged(unit_id: int, attacker_id: int, new_size: int):
 	var ratio = $FightingZone.size.x / server_width
 	unit.entity.scale = Vector2(float(new_size) / IMAGE_WIDTH * ratio, float(new_size) / IMAGE_HEIGHT * ratio)
 
+func _on_entity_killed(attacker_id: int, defender_id: int, mana_gain: int):
+	print("Entity %d killed by %d, + %d mana" % [attacker_id, defender_id, mana_gain])
+	for i in range(round(mana_gain / 100.0)):
+		_spawn_mana_particle(defender_id)
+
 func _on_entity_despawned(unit_id: int):
 	#print("Entity %d despawned" % [unit_id])
 	var unit = _units.get(unit_id)
@@ -236,6 +242,16 @@ func _on_entity_despawned(unit_id: int):
 		return
 	unit.entity.explode_and_die()
 	_units.erase(unit_id)
+
+func _spawn_mana_particle(unit_id):
+	var unit = _units.get(unit_id)
+	if unit == null:
+		print("Unknown entity")
+		return
+	var particle = mana_particle_scene.instantiate()
+	particle.position = unit.entity.position
+	particle.set_destination($Gui/VBoxContainer/ManaBar.get_global_rect().get_center())
+	$ManaParticles.add_child(particle)
 
 func _on_network_closed():
 	var drawing = load("res://scenes/Drawing.tscn").instantiate()

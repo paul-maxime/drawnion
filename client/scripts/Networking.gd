@@ -8,6 +8,7 @@ signal player_avatar_received(player_id: int, pixels: Array)
 signal entity_summoned(entity_id: int, owner_id: int, x: int, y: int, size: int, element: int)
 signal entity_moved(entity_id: int, x: int, y: int)
 signal entity_damaged(entity_id: int, attacker_id: int, new_size: int)
+signal entity_killed(attacker_id: int, defender_id: int, mana_gain: int)
 signal entity_despawned(entity_id: int)
 signal player_mana(mana: int, max_mana: int)
 signal network_closed()
@@ -46,6 +47,8 @@ func _on_message_received(message):
 			entity_moved.emit(message.entityId, message.x, message.y)
 		"damage":
 			entity_damaged.emit(message.entityId, message.attackerId, message.newSize)
+		"kill":
+			entity_killed.emit(message.attackerId, message.defenderId, message.manaGain)
 		"despawn":
 			entity_despawned.emit(message.entityId)
 		"mana":
