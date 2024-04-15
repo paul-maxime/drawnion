@@ -9,13 +9,28 @@ var IMAGE_WIDTH = 16
 var IMAGE_HEIGHT = 16
 var IMAGE_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT
 
-var server_width
-var server_height
+var server_width = 0
+var server_height = 0
 
 var _avatar: Array[int]
 var _player_id
 var _avatars = {}
-var _colors = {}
+
+var _neutral_color = Color("DDDDDD")
+var _colors = [
+    Color("F40404"),
+    Color("0C48CC"),
+    Color("2CB494"),
+    Color("88409C"),
+    Color("F88C14"),
+    Color("703014"),
+    Color("CCE0D0"),
+    Color("FCFC38"),
+    Color("088008"),
+    Color("FCFC7C"),
+    Color("ECC4B0"),
+    Color("4068D4"),
+]
 
 var _avatar_shader
 
@@ -42,7 +57,6 @@ func _ready():
 		0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
 		0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0
 	])
-	_colors[0] = Color(0.8, 0.8, 0.8, 0.3)
 	$Network.game_joined.connect(_on_game_joined)
 	$Network.player_avatar_received.connect(_on_avatar_received)
 	$Network.entity_summoned.connect(_on_entity_summoned)
@@ -59,6 +73,9 @@ func _process(delta):
 			unit.entity.position = unit.position_start.lerp(unit.position_target, min(1, unit.moving_time))
 
 func _input(event):
+	if server_width == 0:
+		# haven't received map size yet
+		return
 	if event is InputEventMouseButton:
 		if event.is_pressed() and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 			var pos: Vector2 = get_local_mouse_position()
@@ -126,7 +143,6 @@ func _create_avatar(player_id: int, pixels: Array):
 	print("avatar received: ", player_id)
 	var texture = ImageTexture.create_from_image(image)
 	_avatars[player_id] = texture
-	_colors[player_id] = Color.from_hsv(randf_range(0, 1), 1, 1, 0.3)
 
 func _on_avatar_received(player_id: int, pixels: Array):
 	_create_avatar(player_id, pixels)
@@ -139,8 +155,8 @@ func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int,
 	var entity: Node2D = entity_scene.instantiate()
 	var sprite = Sprite2D.new()
 	sprite.name = "Sprite"
-	var color = _colors[owner_id]
-	entity.circle_color = color
+	var color = _get_color_for_player(owner_id)
+	entity.circle_color = Color(color.r, color.g, color.b, 0.3)
 	sprite.texture = _avatars[owner_id]
 	sprite.material = ShaderMaterial.new()
 	sprite.material.set_shader_parameter("line_color", Color(color.r, color.g, color.b, 0.7))
@@ -157,6 +173,11 @@ func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int,
 	unit.moving_time = 0
 	_units[unit_id] = unit
 	$Entities.add_child(entity)
+
+func _get_color_for_player(player_id: int):
+	if player_id == 0:
+		return _neutral_color
+	return _colors[player_id % _colors.size()]
 
 func _on_entity_moved(unit_id: int, x: int, y: int):
 	print("Entity %d moved to (%d, %d)" % [unit_id, x, y])
