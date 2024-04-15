@@ -33,12 +33,14 @@ var _colors = [
 ]
 
 var _avatar_shader
+var _noise_texture
 
 func set_drawing(avatar: Array[int]):
 	_avatar = avatar
 
 func _ready():
 	_avatar_shader = preload ("res://shaders/unit.gdshader")
+	_noise_texture = preload ("res://assets/images/noise/Abstract_Noise_012-128x128.png")
 	_create_avatar(0, [
 		0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0,
@@ -143,8 +145,8 @@ func _create_avatar(player_id: int, pixels: Array):
 func _on_avatar_received(player_id: int, pixels: Array):
 	_create_avatar(player_id, pixels)
 
-func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int, _element: int):
-	#print("Entity %d summoned at (%d, %d), owner %d, size %d" % [unit_id, x, y, owner_id, size])
+func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int, element: int):
+	print("Entity %d summoned at (%d, %d), owner %d, size %d, type %d" % [unit_id, x, y, owner_id, size, element])
 	if _avatars.get(owner_id) == null:
 		printerr("Unknown owner ID for entity ", owner_id)
 		return
@@ -155,8 +157,17 @@ func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int,
 	entity.circle_color = Color(color.r, color.g, color.b, 0.3)
 	sprite.texture = _avatars[owner_id]
 	sprite.material = ShaderMaterial.new()
-	sprite.material.set_shader_parameter("line_color", Color(color.r, color.g, color.b, 0.7))
 	sprite.material.shader = _avatar_shader
+	sprite.material.set_shader_parameter("line_color", Color(color.r, color.g, color.b, 0.7))
+	sprite.material.set_shader_parameter("noise_texture", _noise_texture)
+	sprite.material.set_shader_parameter("timeScaleFactor", 1.0)
+	#sprite.material.set_shader_parameter("width", 0.1)
+	if element == 1:
+		sprite.material.set_shader_parameter("inside_color", Color("#36db3e")) # feuille
+	elif element == 2:
+		sprite.material.set_shader_parameter("inside_color", Color("#ff2e00")) # feu
+	elif element == 3:
+		sprite.material.set_shader_parameter("inside_color", Color("#20aad9")) # eau
 	var ratio = $FightingZone.size.x / server_width
 	entity.position = _server_pos_to_client_pos(Vector2(x, y))
 	entity.scale = Vector2(float(size) / IMAGE_WIDTH * ratio, float(size) / IMAGE_HEIGHT * ratio)
