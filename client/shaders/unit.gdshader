@@ -9,53 +9,6 @@ const vec2 OFFSETS[8] = {
 	vec2(0,1), vec2(1,-2), vec2(1,0), vec2(1,1)
 };
 
-uniform float timeScaleFactor = .04;
-
-// Make sure to use a seamless noise texture
-uniform sampler2D noise_texture: repeat_enable, filter_linear;
-uniform bool intense = false;
-
-float localTime() {
-	return TIME * timeScaleFactor;
-}
-
-mat2 makem2(float theta) {
-	float c = cos(theta);
-	float s = sin(theta);
-	return mat2(vec2(c, -s), vec2(s, c));
-}
-
-float noise(vec2 x) {
-	return texture(noise_texture, x * .01).x;
-}
-
-vec2 gradn(vec2 p) {
-	float ep = .09;
-	float gradx = noise(vec2(p.x, p.y)) - noise(vec2(p.x, p.y));
-	float grady = noise(vec2(p.x, p.y + ep)) - noise(vec2(p.x, p.y - ep));
-	return vec2(gradx, grady);
-}
-
-float flow(vec2 p) {
-	float z = 2.;
-	float rz = 0.;
-	vec2 bp = p;
-	
-	for(float i = 1.; i < 7.; ++i) {
-		p += localTime() * .6;
-		bp += localTime() * 1.9;
-		vec2 gr = gradn(i * p * .34 + localTime() * 1.);
-		gr *= makem2(localTime() * 6. - (.05 * p.x + 0.03 * p.y) * 40.);
-		p += gr * .5;
-		rz += (sin(noise(p) * 7.) *.5 + .5) / z;
-		p = mix(bp, p, .77);
-		z *= 1.4;
-		p *= 2.;
-		bp *= 1.9;
-	}
-	return rz;
-}
-
 void vertex(){
 	// start with adding margin to the original sprite
 	// this will scale up the sprite, will scale down later in fragment()
@@ -85,27 +38,9 @@ void fragment(){
 	vec4 inputColor;
 	inputColor = texture(TEXTURE, scaled_shifted_uv);
 
-	vec2 resolution = 0.1 / SCREEN_PIXEL_SIZE;
-	vec2 fragCoord = FRAGCOORD.xy;
-	fragCoord = vec2(fragCoord.x, resolution.y - fragCoord.y);
-	vec2 p = fragCoord / resolution - 0.5;
-	
-	p.x *= resolution.x / resolution.y;
-	p *= 3.;
-	
-	float rz = flow(p);
-	vec3 col = vec3(line_color.r, line_color.g, line_color.b) / rz;
-	if (intense) {
-		col = pow(col, vec3(1.4));
-	}
-
 	// This if is to remove artifacts outside the boundary of sprites
 	if (scaled_shifted_uv != clamp(scaled_shifted_uv, vec2(0.0), vec2(1.0))) {
 		inputColor.a = 0.0;
-	}
-	
-	if (inputColor.a != 0.0)  {
-		inputColor = vec4(inside_color, 1.0);
 	}
 	
 	float outline = 0.0;
@@ -113,6 +48,5 @@ void fragment(){
 		outline += texture(TEXTURE, scaled_shifted_uv + OFFSETS[i]*width_size).a;
 	}
 	outline = min(outline, 1.0);
-	vec4 border = vec4(col, line_color.a);
 	COLOR = mix(inputColor, line_color, outline - inputColor.a);
 }
