@@ -60,8 +60,9 @@ grow_vertical = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="Gui"]
 layout_mode = 0
 offset_left = 1084.0
+offset_top = 20.0
 offset_right = 1124.0
-offset_bottom = 583.0
+offset_bottom = 603.0
 
 [node name="ElementContainer" type="VBoxContainer" parent="Gui/VBoxContainer"]
 layout_mode = 2
@@ -102,7 +103,7 @@ button_on_2_icon = ExtResource("15_1txbj")
 button_on_3_icon = ExtResource("16_c757a")
 
 [node name="ManaBar" type="ProgressBar" parent="Gui/VBoxContainer"]
-custom_minimum_size = Vector2(0, 433)
+custom_minimum_size = Vector2(0, 413)
 layout_mode = 2
 fill_mode = 3
 show_percentage = false
@@ -129,6 +130,16 @@ layout_mode = 2
 custom_minimum_size = Vector2(22, 21)
 layout_mode = 2
 texture = ExtResource("20_rgh75")
+
+[node name="PlayerCountLabel" type="Label" parent="Gui"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1064.0
+offset_top = -19.0
+offset_right = 1144.0
+offset_bottom = 14.0
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Network" parent="." instance=ExtResource("2_fgb4b")]
 unique_name_in_owner = true

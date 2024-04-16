@@ -167,6 +167,10 @@ func _create_avatar(player_id: int, pixels: Array):
 
 func _on_avatar_received(player_id: int, pixels: Array):
 	_create_avatar(player_id, pixels)
+	if _avatars.size() - 1 == 1:
+		%PlayerCountLabel.text = "%d player" % (_avatars.size() - 1)
+	else:
+		%PlayerCountLabel.text = "%d players" % (_avatars.size() - 1)
 
 func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int, element: int):
 	print("Entity %d summoned at (%d, %d), owner %d, size %d, type %d" % [unit_id, x, y, owner_id, size, element])
