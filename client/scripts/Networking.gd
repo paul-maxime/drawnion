@@ -5,6 +5,7 @@ var server_url = "wss://paulmaxime.fr/ws/drawnion/";
 
 signal game_joined(player_id: int, map_width: int, map_height: int)
 signal player_avatar_received(player_id: int, pixels: Array)
+signal player_leave_received(player_id: int)
 signal entity_summoned(entity_id: int, owner_id: int, x: int, y: int, size: int, element: int)
 signal entity_moved(entity_id: int, x: int, y: int)
 signal entity_damaged(entity_id: int, attacker_id: int, new_size: int)
@@ -41,6 +42,8 @@ func _on_message_received(message):
 			game_joined.emit(message.playerId, message.mapWidth, message.mapHeight)
 		"avatar":
 			player_avatar_received.emit(message.playerId, message.pixels)
+		"leave":
+			player_leave_received.emit(message.playerId)
 		"summon":
 			entity_summoned.emit(message.entityId, message.ownerId, message.x, message.y, message.size, message.element)
 		"move":

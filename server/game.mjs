@@ -93,6 +93,7 @@ export function onDisconnected(player) {
       sendToAll(makeDespawnMessage(entity));
     }
   }
+  sendToAll(makeLeaveMessage(player))
   entities = entities.filter(x => x.ownerId !== player.id);
   sendWebhookIfRequired();
 }
@@ -379,6 +380,13 @@ function makeAvatarMessage(player) {
     type: "avatar",
     playerId: player.id,
     pixels: player.pixels,
+  };
+}
+
+function makeLeaveMessage(player) {
+  return {
+    type: "leave",
+    playerId: player.id,
   };
 }
 

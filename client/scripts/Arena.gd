@@ -64,6 +64,7 @@ func _ready():
 	])
 	$Network.game_joined.connect(_on_game_joined)
 	$Network.player_avatar_received.connect(_on_avatar_received)
+	$Network.player_leave_received.connect(_on_leave_received)
 	$Network.entity_summoned.connect(_on_entity_summoned)
 	$Network.entity_moved.connect(_on_entity_moved)
 	$Network.entity_damaged.connect(_on_entity_damaged)
@@ -165,12 +166,19 @@ func _create_avatar(player_id: int, pixels: Array):
 	var texture = ImageTexture.create_from_image(image)
 	_avatars[player_id] = texture
 
-func _on_avatar_received(player_id: int, pixels: Array):
-	_create_avatar(player_id, pixels)
+func _update_player_count():
 	if _avatars.size() - 1 == 1:
 		%PlayerCountLabel.text = "%d player" % (_avatars.size() - 1)
 	else:
 		%PlayerCountLabel.text = "%d players" % (_avatars.size() - 1)
+
+func _on_avatar_received(player_id: int, pixels: Array):
+	_create_avatar(player_id, pixels)
+	_update_player_count()
+
+func _on_leave_received(player_id: int):
+	_avatars.erase(player_id)
+	_update_player_count()
 
 func _on_entity_summoned(unit_id: int, owner_id: int, x: int, y: int, size: int, element: int):
 	print("Entity %d summoned at (%d, %d), owner %d, size %d, type %d" % [unit_id, x, y, owner_id, size, element])
