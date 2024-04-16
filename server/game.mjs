@@ -35,17 +35,17 @@ const TICKS_BETWEEN_NEUTRAL_SPAWNS = 5;
 const NEUTRAL_SIZES = [16, 16, 16, 16, 16, 24, 24, 24, 24, 32, 32, 32, 48, 48, 64];
 
 const MANA_PER_TICK = [
-  [50000, 5],
-  [20000, 20],
-  [5000, 50],
-  [0, 200],
+  [5000, 0],
+  [3000, 20],
+  [1000, 50],
+  [0, 100],
 ];
 const INITIAL_MANA = 5000;
 const MAX_MANA = 100000;
 
 const AVATAR_SIZE = 16 * 16;
 
-const TICKS_PER_DECAY = 20;
+const TICKS_PER_DECAY = 15;
 
 let players = [];
 let entities = [];
@@ -272,7 +272,7 @@ function entityAttack(entity, enemy) {
     // Rip.
     const owner = getPlayerFromId(entity.ownerId);
     if (owner) {
-      const manaGain = enemy.originalSize * 100;
+      const manaGain = enemy.originalSize * 50;
       giveManaToPlayer(owner, manaGain);
       sendTo(owner, makeKillMessage(entity, enemy, manaGain));
     } else {
