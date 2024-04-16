@@ -1,8 +1,9 @@
 extends ProgressBar
 
+@export var levels_size: Array[int] = [16, 32, 48, 64]
 @export var levels: Array[int] = [1600, 3200, 4800, 6400]
 var _step_entities = {}
-var _targeted_level = levels[0]
+var _targeted_level = 0
 
 func _ready():
 	var step_entity = preload ("res://scenes/ManaBarStep.tscn")
@@ -23,11 +24,12 @@ func _input(event):
 			var entity = _step_entities[level]
 			var distance = abs(pos.y - entity.position.y)
 			if closest_level == null or distance < closest_distance:
-				closest_level = level
+				closest_level = levels.find(level)
 				closest_distance = distance
 		_targeted_level = closest_level
-		get_node("/root/Arena").summon_size = _targeted_level / 100
-		$ManaCursor.position.y = _step_entities[_targeted_level].position.y + _step_entities[_targeted_level].size.y / 2 - $ManaCursor.size.y / 2
+		print(closest_level)
+		get_node("/root/Arena").summon_size = levels_size[_targeted_level]
+		$ManaCursor.position.y = _step_entities[levels[_targeted_level]].position.y + _step_entities[levels[_targeted_level]].size.y / 2 - $ManaCursor.size.y / 2
 
 var mana_start = 0
 var mana_target = 0
@@ -47,7 +49,7 @@ func _update_max_value(max_mana: int):
 			var entity = _step_entities[level]
 			var mana_ratio = float(log(level) * log(level)) / new_max_value
 			entity.position.y = size.y - size.y * mana_ratio - entity.size.y / 2
-			if _targeted_level == level:
+			if levels[_targeted_level] == level:
 				$ManaCursor.position.y = size.y - size.y * mana_ratio - $ManaCursor.size.y / 2
 	max_value = new_max_value
 
