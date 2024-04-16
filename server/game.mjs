@@ -308,7 +308,7 @@ function onAvatarReceived(player, message) {
   }
 
   const black_pixels = pixels.filter(x => x === 1).length
-  if (black_pixels < 30 || black_pixels > 90) {
+  if (black_pixels < 30 || black_pixels > 110) {
     throw new Error("Invalid avatar");
   }
 

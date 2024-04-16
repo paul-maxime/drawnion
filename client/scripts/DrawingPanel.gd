@@ -5,7 +5,7 @@ var IMAGE_HEIGHT = 16
 var IMAGE_SIZE = IMAGE_WIDTH * IMAGE_HEIGHT
 
 var MIN_PIXELS = 30
-var MAX_PIXELS = 90
+var MAX_PIXELS = 110
 
 var pixels: Array[int] = []
 var center
